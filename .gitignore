@@ -1,0 +1,27 @@
+# 编译产物在源码树外：../cbct_client-build
+cmake-build-*/
+
+# IDE files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Compiled binaries
+*.o
+*.obj
+*.exe
+*.out
+*.so
+*.so.*
+
+# Qt generated files
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.pro.user
+*.pro.user.*
+
+# OS files
+.DS_Store
+Thumbs.db
