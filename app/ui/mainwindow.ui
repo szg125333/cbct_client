@@ -6,14 +6,72 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
+    <width>1280</width>
     <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string/>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="MainToolbar" name="mainToolbar"/>
+    </item>
+    <item>
+     <widget class="QWidget" name="contentArea">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="LeftPanel" name="leftPanel"/>
+       </item>
+       <item>
+        <widget class="QFrame" name="mainSplitterLine">
+         <property name="frameShape">
+          <enum>QFrame::VLine</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="ThreeViewPanel" name="threeViewPanel"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -48,6 +106,23 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MainToolbar</class>
+   <extends>QWidget</extends>
+   <header>main_toolbar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LeftPanel</class>
+   <extends>QWidget</extends>
+   <header>left_panel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ThreeViewPanel</class>
+   <extends>QWidget</extends>
+   <header>three_view_panel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
