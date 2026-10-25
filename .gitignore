@@ -25,3 +25,6 @@ qrc_*.cpp
 # OS files
 .DS_Store
 Thumbs.db
+
+# MiMoCode local plans/state
+.mimocode/

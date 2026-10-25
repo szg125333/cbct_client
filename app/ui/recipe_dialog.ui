@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RecipeDialog</class>
+ <widget class="QDialog" name="RecipeDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>540</width>
+    <height>580</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMain" stretch="1,0">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="leftMargin">
+    <number>8</number>
+   </property>
+   <property name="topMargin">
+    <number>8</number>
+   </property>
+   <property name="rightMargin">
+    <number>8</number>
+   </property>
+   <property name="bottomMargin">
+    <number>8</number>
+   </property>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <!-- 基本信息 -->
+     <attribute name="title">
+      <string>基本信息</string>
+     </attribute>
+     <widget class="QWidget" name="tabBasic">
+      <layout class="QFormLayout" name="formBasic">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelName">
+         <property name="text">
+          <string>名称 *</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="leName">
+         <property name="placeholderText">
+          <string>例如：成人头部 CBCT</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelDesc">
+         <property name="text">
+          <string>描述</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="leDescription">
+         <property name="placeholderText">
+          <string>可选</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <!-- 高压发生器 -->
+     <attribute name="title">
+      <string>高压发生器</string>
+     </attribute>
+     <widget class="QWidget" name="tabHvg">
+      <layout class="QFormLayout" name="formHvg">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelVoltage">
+         <property name="text">
+          <string>管电压 (kV)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="sbVoltageKv"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelCurrent">
+         <property name="text">
+          <string>管电流 (mA)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="sbCurrentMa"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelExposure">
+         <property name="text">
+          <string>曝光时间 (ms)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="sbExposureTimeMs"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelPulse">
+         <property name="text">
+          <string>脉冲次数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="sbPulseCount"/>
+       </item>
+      </layout>
+     </widget>
+     <!-- 平板探测器 -->
+     <attribute name="title">
+      <string>平板探测器</string>
+     </attribute>
+     <widget class="QWidget" name="tabDetector">
+      <layout class="QFormLayout" name="formDetector">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelBinning">
+         <property name="text">
+          <string>Binning</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="sbBinning"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelPixel">
+         <property name="text">
+          <string>像素间距 (mm)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="sbPixelPitch"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelWidth">
+         <property name="text">
+          <string>宽度 (px)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="sbWidth"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelHeight">
+         <property name="text">
+          <string>高度 (px)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="sbHeight"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="labelFps">
+         <property name="text">
+          <string>帧率 (fps)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="sbFrameRate"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="labelGain">
+         <property name="text">
+          <string>增益</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="sbGain"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="labelOffset">
+         <property name="text">
+          <string>偏置</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QDoubleSpinBox" name="sbOffset"/>
+       </item>
+      </layout>
+     </widget>
+     <!-- 龙门架 -->
+     <attribute name="title">
+      <string>龙门架</string>
+     </attribute>
+     <widget class="QWidget" name="tabGantry">
+      <layout class="QFormLayout" name="formGantry">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelSpeed">
+         <property name="text">
+          <string>旋转速度 (°/s)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QDoubleSpinBox" name="sbRotSpeed"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelStart">
+         <property name="text">
+          <string>起始角 (°)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="sbStartAngle"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelEnd">
+         <property name="text">
+          <string>终止角 (°)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="sbEndAngle"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelFrames">
+         <property name="text">
+          <string>投影帧数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="sbTotalFrames"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="labelPitch">
+         <property name="text">
+          <string>螺距 (mm/圈)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="sbPitch"/>
+       </item>
+      </layout>
+     </widget>
+     <!-- 重建算法 -->
+     <attribute name="title">
+      <string>重建算法</string>
+     </attribute>
+     <widget class="QWidget" name="tabRecon">
+      <layout class="QFormLayout" name="formRecon">
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelAlgo">
+         <property name="text">
+          <string>算法</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="cbAlgorithm"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelVoxel">
+         <property name="text">
+          <string>体素尺寸 (mm)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QDoubleSpinBox" name="sbVoxelSize"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="labelIter">
+         <property name="text">
+          <string>迭代次数</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="sbIterations"/>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="labelFilter">
+         <property name="text">
+          <string>滤波核</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="leFilterKernel"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="chkGpu">
+         <property name="text">
+          <string>启用 GPU</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,8 +1,15 @@
-# 核心动态库：暂为空骨架，后续逐步填充
+# 核心动态库：配方/客户端门面等（不依赖 Qt Widgets）
 
-# 共享库至少需要一个编译单元
+file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+)
+file(GLOB_RECURSE CORE_HEADERS CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+)
+
 add_library(cbct_core SHARED
-    core_stub.cpp
+    ${CORE_SOURCES}
+    ${CORE_HEADERS}
 )
 
 target_include_directories(cbct_core
@@ -10,13 +17,10 @@ target_include_directories(cbct_core
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# 预留依赖：后续核心逻辑若用到再启用
-# target_link_libraries(cbct_core
-#     PUBLIC
-#         Qt6::Core
-#         Qt6::Gui
-#         Qt6::Network
-# )
+target_link_libraries(cbct_core
+    PUBLIC
+        Qt5::Core
+)
 
 set_target_properties(cbct_core PROPERTIES
     VERSION 0.1.0

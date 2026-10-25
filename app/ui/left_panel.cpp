@@ -1,5 +1,6 @@
 #include "left_panel.h"
 #include "ui_left_panel.h"
+#include "acquisition_panel.h"
 
 LeftPanel::LeftPanel(QWidget *parent)
     : QWidget(parent)
@@ -7,10 +8,10 @@ LeftPanel::LeftPanel(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // 暂时只有一页空白界面，后续再往 stackWidget 里加页
-    auto *blank = new QWidget(ui->stackWidget);
-    blank->setObjectName(QStringLiteral("blankPage"));
-    ui->stackWidget->addWidget(blank);
+    // 第一页：采集启动
+    auto *acquisition = new AcquisitionPanel(ui->stackWidget);
+    ui->stackWidget->addWidget(acquisition);
+    ui->stackWidget->setCurrentIndex(0);
 }
 
 LeftPanel::~LeftPanel()
