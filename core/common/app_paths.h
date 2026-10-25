@@ -1,9 +1,9 @@
 /**
  * @file app_paths.h
- * @brief 全局路径约定：应用数据目录、配方 JSON、模拟投影目录等
+ * @brief 全局路径约定：应用数据目录、配方 JSON、SQLite、模拟投影目录等
  *
  * 所有“文件放哪”集中在这里，避免魔法字符串散落各处。
- * 以后新增配置/日志文件，也在此增加 xxxPath()。
+ * 以后新增配置/日志/库文件，也在此增加 xxxPath()。
  */
 #ifndef CBCT_APP_PATHS_H
 #define CBCT_APP_PATHS_H
@@ -17,6 +17,7 @@ namespace paths {
 extern const char kRecipeFileName[];             ///< "recipes.json"
 extern const char kDeviceConfigFileName[];       ///< "device_config.json"（预留）
 extern const char kLogFileName[];                ///< "client.log"（预留）
+extern const char kDbFileName[];                 ///< "client.db"（SQLite 主库）
 extern const char kDefaultSimulatedProjectionDir[]; ///< 模拟投影默认目录
 
 /// 应用本地数据根目录（QStandardPaths::AppLocalDataLocation）
@@ -27,16 +28,15 @@ QString appDataDir();
 QString recipeStoragePath();
 QString deviceConfigPath();
 QString logFilePath();
+/// SQLite 完整路径：appDataDir() + "/client.db"
+QString databaseFilePath();
 
 /// 写文件前确保父目录存在
 bool ensureDirFor(const QString &filePath);
 
 /**
  * 模拟投影数据目录（HIS 序列）。
- * 优先级：
- *   1) setSimulatedProjectionDir() 运行时覆盖
- *   2) 环境变量 CBCT_SIM_PROJ_DIR
- *   3) kDefaultSimulatedProjectionDir（/mnt/hgfs/share/catphan）
+ * 优先级：setSimulatedProjectionDir → 环境变量 CBCT_SIM_PROJ_DIR → 默认
  */
 QString simulatedProjectionDir();
 void setSimulatedProjectionDir(const QString &dir);

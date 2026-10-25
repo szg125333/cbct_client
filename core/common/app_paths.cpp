@@ -10,6 +10,7 @@ namespace paths {
 const char kRecipeFileName[] = "recipes.json";
 const char kDeviceConfigFileName[] = "device_config.json";
 const char kLogFileName[] = "client.log";
+const char kDbFileName[] = "client.db";
 const char kDefaultSimulatedProjectionDir[] = "/mnt/hgfs/share/catphan";
 
 namespace {
@@ -36,6 +37,11 @@ QString deviceConfigPath()
 QString logFilePath()
 {
     return appDataDir() + QLatin1Char('/') + QLatin1String(kLogFileName);
+}
+
+QString databaseFilePath()
+{
+    return appDataDir() + QLatin1Char('/') + QLatin1String(kDbFileName);
 }
 
 bool ensureDirFor(const QString &filePath)
