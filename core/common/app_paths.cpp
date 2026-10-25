@@ -10,9 +10,16 @@ namespace paths {
 const char kRecipeFileName[] = "recipes.json";
 const char kDeviceConfigFileName[] = "device_config.json";
 const char kLogFileName[] = "client.log";
+const char kDefaultSimulatedProjectionDir[] = "/mnt/hgfs/share/catphan";
+
+namespace {
+/// 运行时覆盖的投影目录；空表示未设置
+QString g_simulatedProjectionDir;
+}
 
 QString appDataDir()
 {
+    // 例如 /home/用户/.local/share/CBCT/CBCT Client
     return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 }
 
@@ -38,6 +45,23 @@ bool ensureDirFor(const QString &filePath)
         return false;
     }
     return QDir().mkpath(info.absolutePath());
+}
+
+QString simulatedProjectionDir()
+{
+    if (!g_simulatedProjectionDir.isEmpty()) {
+        return g_simulatedProjectionDir;
+    }
+    const QByteArray env = qgetenv("CBCT_SIM_PROJ_DIR");
+    if (!env.isEmpty()) {
+        return QString::fromLocal8Bit(env);
+    }
+    return QString::fromLatin1(kDefaultSimulatedProjectionDir);
+}
+
+void setSimulatedProjectionDir(const QString &dir)
+{
+    g_simulatedProjectionDir = dir;
 }
 
 } // namespace paths

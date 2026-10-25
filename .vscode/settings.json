@@ -2,13 +2,15 @@
     "cmake.buildDirectory": "${workspaceFolder}/../cbct_client-build",
     "cmake.generator": "Ninja",
     "cmake.configureOnOpen": true,
-    "cmake.configureSettings": {
-        "Qt6_DIR": "/usr/lib/x86_64-linux-gnu/cmake/Qt6"
-    },
+    "cmake.configureSettings": {},
+    "cmake.saveBeforeBuild": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "editor.formatOnSave": true,
     "files.associations": {
         "*.cpp": "cpp",
         "*.h": "cpp"
+    },
+    "files.exclude": {
+        "**/.git": true
     }
 }

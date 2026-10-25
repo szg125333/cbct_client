@@ -11,6 +11,16 @@ MainToolbar::MainToolbar(QWidget *parent)
     ui->setupUi(this);
 
     // objectName -> 悬停提示 / 点击打印用的功能名
+    //
+    // 分组说明（与 .ui 中分隔符一致）：
+    // 1 文件   2 视图/布局  3 2D 测量与窗宽窗位  4 3D 操作
+    // 5 勾画/角度/选取等测量编辑  6 剪贴板
+    //
+    // 测量相关（首版仅 UI 占位，逻辑后续挂到视图交互）：
+    //   btnMeasureRuler  直线距离标尺（mm，需像素间距）
+    //   btnAngleMeasure  角度测量（三点角）
+    //   btnPixelProbe    单像素 CT 值/HU 探测
+    //   btnMoveCrosshair 十字线定位
     m_objectToAction = {
         {QStringLiteral("btnOpen"),        QStringLiteral("打开文件")},
         {QStringLiteral("btnSave"),        QStringLiteral("保存")},
@@ -30,8 +40,8 @@ MainToolbar::MainToolbar(QWidget *parent)
         {QStringLiteral("btnPan"),         QStringLiteral("平移")},
         {QStringLiteral("btnZoom"),        QStringLiteral("缩放")},
         {QStringLiteral("btnEdgeEnhance"), QStringLiteral("边缘增强")},
-        {QStringLiteral("btnMeasureRuler"),QStringLiteral("测量标尺")},
-        {QStringLiteral("btnPixelProbe"),  QStringLiteral("像素探测")},
+        {QStringLiteral("btnMeasureRuler"),QStringLiteral("测量标尺")}, // 测量：直线距离
+        {QStringLiteral("btnPixelProbe"),  QStringLiteral("像素探测")}, // 测量：点像素值
 
         {QStringLiteral("btn3DRotate"),    QStringLiteral("3D旋转")},
         {QStringLiteral("btn3DPan"),       QStringLiteral("3D平移")},
@@ -42,7 +52,7 @@ MainToolbar::MainToolbar(QWidget *parent)
 
         {QStringLiteral("btnDrawContour"), QStringLiteral("绘制勾画")},
         {QStringLiteral("btnCutTrim"),     QStringLiteral("切割修剪")},
-        {QStringLiteral("btnAngleMeasure"),QStringLiteral("角度测量")},
+        {QStringLiteral("btnAngleMeasure"),QStringLiteral("角度测量")}, // 测量：三点角
         {QStringLiteral("btnPolygonSelect"),QStringLiteral("多边形选取")},
         {QStringLiteral("btnMagicThreshold"),QStringLiteral("魔棒阈值")},
         {QStringLiteral("btnMoveCrosshair"),QStringLiteral("移动准星")},

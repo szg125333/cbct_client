@@ -65,34 +65,50 @@
         </widget>
        </item>
        <item>
-        <widget class="ThreeViewPanel" name="threeViewPanel"/>
+        <widget class="QStackedWidget" name="rightStack">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="ThreeViewPanel" name="threeViewPanel"/>
+         <widget class="AcquisitionImagePanel" name="acquisitionImagePanel"/>
+        </widget>
        </item>
       </layout>
      </widget>
     </item>
    </layout>
   </widget>
+  <!--
+    菜单栏：五个顶级菜单，二级 QAction 尚未挂接。
+    objectName：menuFile menuEdit menuView menuWindow menuHelp
+    各菜单用途与规划见 mainwindow.h 顶部 ASCII 布局说明。
+  -->
   <widget class="QMenuBar" name="menubar">
+   <!-- 文件：患者/检查/数据导入导出/退出；规划：新建患者、打开、保存、导入 DICOM、退出 -->
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>文件</string>
     </property>
    </widget>
+   <!-- 编辑：撤销重做、复制粘贴、清除勾画/测量标注 -->
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>编辑</string>
     </property>
    </widget>
+   <!-- 视图：三视图↔采集2D、布局 1x1~3x3、窗宽窗位（只改显示不改数据） -->
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>视图</string>
     </property>
    </widget>
+   <!-- 窗口：左侧功能栏显隐、重置布局（当前为固定分栏，非 QDockWidget） -->
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>窗口</string>
     </property>
    </widget>
+   <!-- 帮助：关于版本、使用说明、日志路径 -->
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>帮助</string>
@@ -121,6 +137,11 @@
    <class>ThreeViewPanel</class>
    <extends>QWidget</extends>
    <header>three_view_panel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AcquisitionImagePanel</class>
+   <extends>QWidget</extends>
+   <header>acquisition_image_panel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

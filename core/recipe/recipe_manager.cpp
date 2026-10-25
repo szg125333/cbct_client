@@ -12,14 +12,15 @@
 namespace cbct {
 
 namespace {
-const int kStorageVersion = 1;
+const int kStorageVersion = 1;              ///< JSON 根字段 version，便于以后升级格式
 const char kVersionKey[] = "version";
-const char kRecipesKey[] = "recipes";
+const char kRecipesKey[] = "recipes";       ///< JSON 根字段名：配方数组
 }
 
 RecipeManager::RecipeManager(QObject *parent)
     : QObject(parent)
 {
+    // 默认写到应用本地数据目录，例如 ~/.local/share/CBCT/CBCT Client/recipes.json
     m_storagePath = paths::recipeStoragePath();
 }
 
@@ -30,9 +31,7 @@ QString RecipeManager::storagePath() const
 
 void RecipeManager::setStoragePath(const QString &path)
 {
-    if (m_storagePath != path) {
-        m_storagePath = path;
-    }
+    m_storagePath = path;
 }
 
 bool RecipeManager::load()
@@ -42,13 +41,14 @@ bool RecipeManager::load()
     QJsonObject root;
     QString error;
     if (!JsonFileIo::read(m_storagePath, root, &error)) {
-        // 文件不存在等：写入内置示例后重试
+        // 首次运行或文件损坏：写入示例配方
         seedDefaults();
         const bool saved = persist();
         emit recipesChanged();
         return saved;
     }
 
+    // 逐条反序列化；非法条目跳过
     const QJsonArray arr = root.value(QLatin1String(kRecipesKey)).toArray();
     for (const QJsonValue &value : arr) {
         bool ok = false;
@@ -74,7 +74,7 @@ bool RecipeManager::save() const
 
 QList<Recipe> RecipeManager::all() const
 {
-    return m_recipes;
+    return m_recipes; // Qt 隐式共享，拷贝代价低
 }
 
 Recipe RecipeManager::findById(const QString &id) const
@@ -84,7 +84,7 @@ Recipe RecipeManager::findById(const QString &id) const
             return r;
         }
     }
-    return Recipe{};
+    return Recipe{}; // id 为空表示未找到
 }
 
 bool RecipeManager::contains(const QString &id) const
@@ -104,7 +104,7 @@ bool RecipeManager::add(const Recipe &recipe)
     }
     m_recipes.append(recipe);
     if (!persist()) {
-        m_recipes.removeLast();
+        m_recipes.removeLast(); // 写盘失败则回滚内存
         return false;
     }
     emit recipesChanged();
@@ -121,7 +121,7 @@ bool RecipeManager::update(const Recipe &recipe)
             const Recipe old = m_recipes.at(i);
             m_recipes[i] = recipe;
             if (!persist()) {
-                m_recipes[i] = old;
+                m_recipes[i] = old; // 回滚
                 return false;
             }
             emit recipesChanged();
@@ -151,6 +151,7 @@ void RecipeManager::seedDefaults()
 {
     m_recipes.clear();
 
+    // 示例 1：成人头部
     Recipe head;
     head.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     head.name = QStringLiteral("成人头部 CBCT");
@@ -162,6 +163,7 @@ void RecipeManager::seedDefaults()
     head.gantry.totalFrames = 720;
     m_recipes.append(head);
 
+    // 示例 2：胸部低剂
     Recipe chest;
     chest.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     chest.name = QStringLiteral("胸部低剂");
@@ -174,6 +176,7 @@ void RecipeManager::seedDefaults()
     chest.recon.algorithm = QStringLiteral("FDK");
     m_recipes.append(chest);
 
+    // 示例 3：四肢
     Recipe limbs;
     limbs.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     limbs.name = QStringLiteral("四肢");
@@ -198,10 +201,7 @@ bool RecipeManager::persist() const
     root[QLatin1String(kRecipesKey)] = arr;
 
     QString error;
-    if (!JsonFileIo::write(m_storagePath, root, &error)) {
-        return false;
-    }
-    return true;
+    return JsonFileIo::write(m_storagePath, root, &error);
 }
 
 } // namespace cbct

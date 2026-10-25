@@ -28,8 +28,11 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$gcc"],
-            "dependsOn": "CMake Configure"
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "CMake Configure",
+            "detail": "整个工程 CMake 编译（不要单文件 g++）"
         }
     ]
 }

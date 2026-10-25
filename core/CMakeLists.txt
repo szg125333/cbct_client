@@ -20,6 +20,7 @@ target_include_directories(cbct_core
 target_link_libraries(cbct_core
     PUBLIC
         Qt5::Core
+        Qt5::Gui
 )
 
 set_target_properties(cbct_core PROPERTIES

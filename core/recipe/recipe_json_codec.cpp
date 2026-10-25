@@ -76,17 +76,19 @@ GantryParams gantryFromJson(const QJsonObject &o)
     return p;
 }
 
+/// ReconParams → JSON 对象（键名与 recipe.json 中 "recon" 子节点一致）
 QJsonObject reconToJson(const ReconParams &p)
 {
     QJsonObject o;
-    o[QStringLiteral("algorithm")] = p.algorithm;
-    o[QStringLiteral("voxelSizeMm")] = p.voxelSizeMm;
-    o[QStringLiteral("iterations")] = p.iterations;
-    o[QStringLiteral("filterKernel")] = p.filterKernel;
-    o[QStringLiteral("gpuEnabled")] = p.gpuEnabled;
+    o[QStringLiteral("algorithm")] = p.algorithm;       ///< 算法名
+    o[QStringLiteral("voxelSizeMm")] = p.voxelSizeMm;  ///< 体素边长 mm
+    o[QStringLiteral("iterations")] = p.iterations;    ///< 迭代次数（迭代算法）
+    o[QStringLiteral("filterKernel")] = p.filterKernel;///< 滤波核
+    o[QStringLiteral("gpuEnabled")] = p.gpuEnabled;    ///< 是否 GPU
     return o;
 }
 
+/// JSON 对象 → ReconParams；缺字段时保留结构体默认值
 ReconParams reconFromJson(const QJsonObject &o)
 {
     ReconParams p;

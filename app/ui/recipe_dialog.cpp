@@ -13,7 +13,12 @@ RecipeDialog::RecipeDialog(QWidget *parent)
 
     setupSpinRanges();
 
-    ui->cbAlgorithm->addItems({QStringLiteral("FDK"), QStringLiteral("SART"), QStringLiteral("SIRT")});
+    // 「重建算法」页下拉：与 ReconParams::algorithm 可选值对应
+    ui->cbAlgorithm->addItems({
+        QStringLiteral("FDK"),   ///< 锥束滤波反投影，最常用
+        QStringLiteral("SART"),  ///< 迭代
+        QStringLiteral("SIRT"),  ///< 迭代
+    });
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &RecipeDialog::onAccept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -97,15 +102,18 @@ void RecipeDialog::setupSpinRanges()
     ui->sbPitch->setDecimals(2);
     ui->sbPitch->setValue(0.0);
 
+    // ---- 重建算法页（tabRecon）控件范围 ----
+    // 体素边长：过细则内存爆炸，过粗则空间分辨率差
     ui->sbVoxelSize->setRange(0.05, 5.0);
     ui->sbVoxelSize->setDecimals(3);
-    ui->sbVoxelSize->setValue(0.3);
+    ui->sbVoxelSize->setValue(0.3); // 默认 0.3 mm
 
+    // 迭代次数：仅 SART/SIRT 有意义；FDK 可不管
     ui->sbIterations->setRange(1, 500);
     ui->sbIterations->setValue(20);
 
-    ui->chkGpu->setChecked(true);
-    ui->leFilterKernel->setText(QStringLiteral("standard"));
+    ui->chkGpu->setChecked(true); // 默认尝试 GPU 重建
+    ui->leFilterKernel->setText(QStringLiteral("standard")); // 默认滤波核
 }
 
 cbct::Recipe RecipeDialog::collectRecipe() const
@@ -134,11 +142,12 @@ cbct::Recipe RecipeDialog::collectRecipe() const
     r.gantry.totalFrames = ui->sbTotalFrames->value();
     r.gantry.pitchMmPerRot = ui->sbPitch->value();
 
-    r.recon.algorithm = ui->cbAlgorithm->currentText();
-    r.recon.voxelSizeMm = ui->sbVoxelSize->value();
-    r.recon.iterations = ui->sbIterations->value();
-    r.recon.filterKernel = ui->leFilterKernel->text().trimmed();
-    r.recon.gpuEnabled = ui->chkGpu->isChecked();
+    // ---- 重建算法页 → ReconParams ----
+    r.recon.algorithm = ui->cbAlgorithm->currentText();       // FDK/SART/SIRT
+    r.recon.voxelSizeMm = ui->sbVoxelSize->value();           // 体素 mm
+    r.recon.iterations = ui->sbIterations->value();           // 迭代次数
+    r.recon.filterKernel = ui->leFilterKernel->text().trimmed(); // 滤波核
+    r.recon.gpuEnabled = ui->chkGpu->isChecked();             // GPU 开关
 
     return r;
 }
