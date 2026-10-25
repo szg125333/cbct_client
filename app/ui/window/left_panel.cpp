@@ -1,12 +1,14 @@
 #include "left_panel.h"
 #include "ui_left_panel.h"
-#include "acquisition_panel.h"
+#include "acquisition_panel.h" // ui/acquisition/
+#include "common/log_service.h"
 
 LeftPanel::LeftPanel(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LeftPanel)
 {
     ui->setupUi(this);
+    CBCT_LOG_DEBUG("ui", "左侧功能栏初始化");
 
     // ui->stackWidget：左侧功能页栈；宽约 220–420（见 left_panel.ui）
     // 第 0 页：采集启动界面（配方下拉、开始采集、检测记录表）

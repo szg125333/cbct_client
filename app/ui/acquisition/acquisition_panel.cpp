@@ -6,9 +6,10 @@
 #include "bridge/recipe_bridge.h"
 #include "client_core.h"
 #include "common/app_paths.h"
+#include "common/log_service.h"
 #include "db/database_service.h"
 #include "recipe/recipe_manager.h"
-#include "ui/recipe_dialog.h"
+#include "recipe_dialog.h" // ui/acquisition/
 
 #include <QAbstractItemView>
 #include <QDateTime>
@@ -75,6 +76,8 @@ AcquisitionPanel::AcquisitionPanel(QWidget *parent)
 
     // ClientCore::initialize 会打开 SQLite；失败经 databaseError 提示
     cbct::ClientCore::instance().initialize();
+    CBCT_LOG_INFO("ui", "采集页初始化 db_ready={}",
+                  cbct::ClientCore::instance().database().isReady() ? 1 : 0);
     checkDatabaseOnStartup();
 
     // 启动加载历史检测记录（与采集结束后的加载共用 fillRecordsTable）
@@ -117,9 +120,10 @@ void AcquisitionPanel::onRecipeIndexChanged(int index)
 
 void AcquisitionPanel::onStartClicked()
 {
+    CBCT_LOG_INFO("ui", "用户点击开始采集");
     cbct::Recipe recipe;
     if (!currentRecipe(recipe)) {
-        // 启动失败也记入数据库
+        CBCT_LOG_WARN("ui", "未选择有效配方");
         m_currentRecipeId.clear();
         m_currentRecipeName = tr("（未选择）");
         persistAndRefresh(makeRecord(tr("失败"), tr("请选择有效配方"), 0));
@@ -132,12 +136,14 @@ void AcquisitionPanel::onStartClicked()
 
     QString error;
     if (!m_detectorBridge->startWithRecipe(recipe, &error)) {
+        CBCT_LOG_ERROR("ui", "启动采集失败: {}", error.toStdString());
         persistAndRefresh(makeRecord(tr("失败"), error, 0));
         ui->lbDeviceStatus->setText(tr("设备状态：错误"));
         emit acquisitionFinished(0, m_currentRecipeName);
         return;
     }
 
+    CBCT_LOG_INFO("ui", "采集启动成功 recipe={}", recipe.name.toStdString());
     ui->btnStart->setEnabled(false);
 }
 
@@ -148,6 +154,7 @@ void AcquisitionPanel::onStopClicked()
 
 void AcquisitionPanel::stopAcquisition()
 {
+    CBCT_LOG_INFO("ui", "用户停止采集");
     m_detectorBridge->stop();
     ui->btnStart->setEnabled(true);
 }
@@ -221,7 +228,7 @@ void AcquisitionPanel::setupRecordsTable()
 
 void AcquisitionPanel::showDatabaseError(const QString &message)
 {
-    // 左侧两处同时提示，方便扫一眼能看见
+    CBCT_LOG_ERROR("ui", "界面收到数据库错误: {}", message.toStdString());
     ui->lbDeviceStatus->setText(tr("设备状态：数据库错误"));
     ui->lbRecipeSummary->setText(tr("数据库错误：%1").arg(message));
     qWarning().noquote() << QStringLiteral("[AcquisitionPanel] 数据库错误: %1").arg(message);
@@ -273,11 +280,13 @@ cbct::DetectionRecord AcquisitionPanel::makeRecord(const QString &status,
 
 void AcquisitionPanel::persistAndRefresh(const cbct::DetectionRecord &record)
 {
+    CBCT_LOG_INFO("ui", "写入检测记录 recipe={} status={} frames={}",
+                  record.recipeName.toStdString(),
+                  record.status.toStdString(),
+                  record.frameCount);
     // 1) 异步 INSERT（db 线程）
     m_recordBridge->appendRecord(record);
-    // 2) 插入完成后由 DB 再 query？简单可靠：立刻再查一次最近列表刷表
-    //    与 INSERT 并行时可能略早，故在 recordInserted 后再查更稳。
-    //    这里再 reload 一次；DB 任务队列保证 INSERT 先于本次 SELECT。
+    // 2) 再 query 最近列表刷表（DB 队列保证 INSERT 先于 SELECT）
     m_recordBridge->reloadRecent(100);
 }
 

@@ -35,6 +35,9 @@ public:
     /// 启动 db 线程并打开库+建表；幂等。失败通过 dbError。
     bool initialize(QString *error = nullptr);
 
+    /// 退出前关闭连接并停线程（勿在析构里做长时间 Blocking）
+    void shutdown();
+
     /// 任意线程：异步插入（结果看 recordInserted / dbError）
     void insertRecord(const DetectionRecord &record);
 
@@ -58,6 +61,7 @@ private:
     QThread *m_thread = nullptr;        ///< db 工作线程
     bool m_ready = false;               ///< open 是否已成功
     bool m_initStarted = false;         ///< 防止重复 initialize
+    bool m_shutdownDone = false;        ///< shutdown 幂等
 };
 
 } // namespace cbct

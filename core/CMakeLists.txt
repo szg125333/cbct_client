@@ -22,6 +22,7 @@ target_link_libraries(cbct_core
         Qt5::Core
         Qt5::Gui
         Qt5::Sql
+        spdlog::spdlog
 )
 
 set_target_properties(cbct_core PROPERTIES

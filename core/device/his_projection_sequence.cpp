@@ -1,5 +1,7 @@
 #include "device/his_projection_sequence.h"
 
+#include "common/log_service.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -23,6 +25,7 @@ bool HisProjectionSequence::open(const QString &directory, QString *error)
 
     QDir dir(directory);
     if (!dir.exists()) {
+        CBCT_LOG_ERROR("device", "投影目录不存在: {}", directory.toStdString());
         if (error) {
             *error = QStringLiteral("投影数据目录不存在: %1").arg(directory);
         }
@@ -42,6 +45,7 @@ bool HisProjectionSequence::open(const QString &directory, QString *error)
     }
 
     if (names.isEmpty()) {
+        CBCT_LOG_ERROR("device", "目录中无 image_rawA_*.his: {}", directory.toStdString());
         if (error) {
             *error = QStringLiteral("目录中未找到 image_rawA_*.his: %1").arg(directory);
         }
@@ -105,6 +109,8 @@ bool HisProjectionSequence::open(const QString &directory, QString *error)
     m_directory = QFileInfo(directory).absoluteFilePath();
     m_files = names;
     loadAngles();
+    CBCT_LOG_INFO("device", "HIS 序列已打开 frames={} size={}x{} header={}",
+                  static_cast<int>(m_files.size()), m_width, m_height, m_headerSize);
     return true;
 }
 

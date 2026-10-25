@@ -2,6 +2,7 @@
 
 #include "common/app_paths.h"
 #include "common/json_file_io.h"
+#include "common/log_service.h"
 #include "recipe/recipe_json_codec.h"
 
 #include <QJsonArray>
@@ -42,6 +43,8 @@ bool RecipeManager::load()
     QString error;
     if (!JsonFileIo::read(m_storagePath, root, &error)) {
         // 首次运行或文件损坏：写入示例配方
+        CBCT_LOG_WARN("recipe", "配方文件不可读，写入示例: {}",
+                      error.toStdString());
         seedDefaults();
         const bool saved = persist();
         emit recipesChanged();
@@ -63,6 +66,7 @@ bool RecipeManager::load()
         persist();
     }
 
+    CBCT_LOG_INFO("recipe", "加载配方 count={}", static_cast<int>(m_recipes.size()));
     emit recipesChanged();
     return true;
 }
@@ -100,13 +104,16 @@ bool RecipeManager::contains(const QString &id) const
 bool RecipeManager::add(const Recipe &recipe)
 {
     if (recipe.id.isEmpty() || recipe.name.isEmpty() || contains(recipe.id)) {
+        CBCT_LOG_WARN("recipe", "add 拒绝 name={} id={}",
+                      recipe.name.toStdString(), recipe.id.toStdString());
         return false;
     }
     m_recipes.append(recipe);
     if (!persist()) {
-        m_recipes.removeLast(); // 写盘失败则回滚内存
+        m_recipes.removeLast();
         return false;
     }
+    CBCT_LOG_INFO("recipe", "新增配方 name={}", recipe.name.toStdString());
     emit recipesChanged();
     return true;
 }
@@ -124,6 +131,7 @@ bool RecipeManager::update(const Recipe &recipe)
                 m_recipes[i] = old; // 回滚
                 return false;
             }
+            CBCT_LOG_INFO("recipe", "更新配方 name={}", recipe.name.toStdString());
             emit recipesChanged();
             return true;
         }
@@ -140,6 +148,7 @@ bool RecipeManager::remove(const QString &id)
                 m_recipes.insert(i, old);
                 return false;
             }
+            CBCT_LOG_INFO("recipe", "删除配方 id={}", id.toStdString());
             emit recipesChanged();
             return true;
         }
@@ -201,7 +210,13 @@ bool RecipeManager::persist() const
     root[QLatin1String(kRecipesKey)] = arr;
 
     QString error;
-    return JsonFileIo::write(m_storagePath, root, &error);
+    const bool ok = JsonFileIo::write(m_storagePath, root, &error);
+    if (!ok) {
+        CBCT_LOG_ERROR("recipe", "保存配方失败: {}", error.toStdString());
+    } else {
+        CBCT_LOG_DEBUG("recipe", "保存配方 count={}", static_cast<int>(m_recipes.size()));
+    }
+    return ok;
 }
 
 } // namespace cbct

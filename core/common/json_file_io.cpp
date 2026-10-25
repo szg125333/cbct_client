@@ -1,5 +1,7 @@
 #include "common/json_file_io.h"
 
+#include "common/log_service.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -12,6 +14,7 @@ bool JsonFileIo::read(const QString &path, QJsonObject &root, QString *error)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        CBCT_LOG_WARN("core", "JSON 打开失败: {}", path.toStdString());
         if (error) {
             *error = QStringLiteral("无法打开文件: %1").arg(path);
         }
@@ -64,6 +67,7 @@ bool JsonFileIo::write(const QString &path, const QJsonObject &root, QString *er
         return false;
     }
     if (!file.commit()) {
+        CBCT_LOG_ERROR("core", "JSON 提交失败: {}", path.toStdString());
         if (error) {
             *error = QStringLiteral("提交文件失败: %1").arg(path);
         }

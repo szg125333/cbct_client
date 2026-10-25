@@ -1,6 +1,7 @@
 #include "db/database_service.h"
 
 #include "common/app_paths.h"
+#include "common/log_service.h"
 #include "db/database_worker.h"
 
 #include <QMetaObject>
@@ -39,14 +40,25 @@ DatabaseService::DatabaseService(QObject *parent)
 
 DatabaseService::~DatabaseService()
 {
-    if (m_worker && m_ready) {
-        QMetaObject::invokeMethod(m_worker, "close", Qt::BlockingQueuedConnection);
+    shutdown();
+}
+
+void DatabaseService::shutdown()
+{
+    if (m_shutdownDone) {
+        return;
     }
+    m_shutdownDone = true;
+    CBCT_LOG_DEBUG("db", "DatabaseService::shutdown");
+
+    // 不使用 BlockingQueued：db 线程若卡住会导致关窗无法退出
+    // 直接停事件循环；SQLite 连接由进程退出回收
     if (m_thread) {
         m_thread->quit();
-        m_thread->wait(3000);
+        m_thread->wait(1500);
     }
-    delete m_worker;
+    m_worker = nullptr;
+    m_ready = false;
 }
 
 bool DatabaseService::initialize(QString *error)
@@ -55,6 +67,7 @@ bool DatabaseService::initialize(QString *error)
         return m_ready;
     }
     m_initStarted = true;
+    CBCT_LOG_DEBUG("db", "DatabaseService::initialize");
 
     const QString path = paths::databaseFilePath();
     if (!paths::ensureDirFor(path)) {
@@ -90,17 +103,20 @@ bool DatabaseService::initialize(QString *error)
         return false;
     }
     m_ready = true;
+    CBCT_LOG_INFO("db", "DatabaseService 初始化成功 path={}", path.toStdString());
     return true;
 }
 
 void DatabaseService::insertRecord(const DetectionRecord &record)
 {
+    CBCT_LOG_DEBUG("db", "提交 INSERT 任务 recipe={}", record.recipeName.toStdString());
     QMetaObject::invokeMethod(m_worker, "insertRecord", Qt::QueuedConnection,
                               Q_ARG(cbct::DetectionRecord, record));
 }
 
 void DatabaseService::queryRecent(int limit)
 {
+    CBCT_LOG_DEBUG("db", "提交 queryRecent 任务 limit={}", limit);
     QMetaObject::invokeMethod(m_worker, "queryRecent", Qt::QueuedConnection,
                               Q_ARG(int, limit));
 }

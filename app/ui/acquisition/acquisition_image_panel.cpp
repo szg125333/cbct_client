@@ -2,6 +2,7 @@
 #include "ui_acquisition_image_panel.h"
 
 #include "bridge/detector_bridge.h"
+#include "common/log_service.h"
 #include "device/frame_mailbox.h"
 
 #include <QPixmap>
@@ -42,11 +43,15 @@ void AcquisitionImagePanel::setDetectorBridge(DetectorBridge *bridge)
 
 void AcquisitionImagePanel::startPolling()
 {
+    CBCT_LOG_DEBUG("ui", "2D 采集页开始拉帧");
     m_pollTimer->start();
 }
 
 void AcquisitionImagePanel::stopPolling()
 {
+    if (m_pollTimer->isActive()) {
+        CBCT_LOG_DEBUG("ui", "2D 采集页停止拉帧");
+    }
     m_pollTimer->stop();
 }
 
@@ -81,7 +86,7 @@ void AcquisitionImagePanel::showFrame(const QImage &frame, int index, int total,
 
 void AcquisitionImagePanel::onAcquisitionFinished()
 {
-    // 队列里可能还有未显示的帧，先抽干再显示完成
+    CBCT_LOG_INFO("ui", "采集完成，抽干帧队列");
     if (m_bridge) {
         cbct::ProjectionFrame frame;
         while (m_bridge->tryPopFrame(frame)) {
@@ -94,6 +99,7 @@ void AcquisitionImagePanel::onAcquisitionFinished()
 
 void AcquisitionImagePanel::onAcquisitionError(const QString &message)
 {
+    CBCT_LOG_ERROR("ui", "采集显示错误: {}", message.toStdString());
     ui->lbFrame->setText(tr("错误: %1").arg(message));
 }
 

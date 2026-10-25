@@ -42,6 +42,9 @@ public:
 
     void initialize();
 
+    /// 退出前必须调用：停采集线程、关数据库线程（aboutToQuit 时调用）
+    void shutdown();
+
     RecipeManager &recipeManager();
     DetectorSimulator &detector();
     FrameMailbox &frameMailbox();
@@ -60,6 +63,7 @@ private:
     DatabaseService *m_database = nullptr; ///< SQLite 门面
     QThread *m_detectorThread = nullptr;
     bool m_initialized = false;
+    bool m_shutdownDone = false; ///< shutdown 幂等
 };
 
 } // namespace cbct

@@ -1,5 +1,7 @@
 #include "device/detector_simulator.h"
 
+#include "common/log_service.h"
+
 namespace cbct {
 
 DetectorSimulator::DetectorSimulator(QObject *parent)
@@ -60,14 +62,19 @@ bool DetectorSimulator::beginAcquisition(const DetectorParams &params, const QSt
     setState(DetectorState::Running);
     m_timer->start(m_intervalMs);
     m_lastBeginOk = true;
+    CBCT_LOG_INFO("device", "开始采集 dir={} frames={} intervalMs={}",
+                  projectionDir.toStdString(),
+                  m_sequence.frameCount(),
+                  m_intervalMs);
     return true;
 }
 
 void DetectorSimulator::endAcquisition()
 {
+    CBCT_LOG_INFO("device", "结束采集 state={} nextIndex={}",
+                  static_cast<int>(m_state), m_nextIndex);
     m_timer->stop();
     if (m_mailbox) {
-        // 若生产者正阻塞在满队列 push 上，abort 会唤醒它并丢弃
         m_mailbox->abort();
     }
     if (m_state == DetectorState::Running || m_state == DetectorState::Initializing) {
@@ -85,6 +92,7 @@ void DetectorSimulator::onTick()
         // 正常读完全部帧 → Finished；失败时 nextFrame 内已 fail()
         m_timer->stop();
         if (m_state == DetectorState::Running) {
+            CBCT_LOG_INFO("device", "全部帧发送完成 total={}", m_sequence.frameCount());
             setState(DetectorState::Finished);
             emit finished();
         }
@@ -96,6 +104,7 @@ void DetectorSimulator::setState(DetectorState s)
     if (m_state == s) {
         return;
     }
+    CBCT_LOG_DEBUG("device", "状态 {} -> {}", static_cast<int>(m_state), static_cast<int>(s));
     m_state = s;
     emit stateChanged(static_cast<int>(s));
 }
@@ -103,6 +112,7 @@ void DetectorSimulator::setState(DetectorState s)
 void DetectorSimulator::fail(const QString &message)
 {
     m_lastError = message;
+    CBCT_LOG_ERROR("device", message.toStdString());
     m_timer->stop();
     setState(DetectorState::Error);
     emit errorOccurred(message);
@@ -153,6 +163,10 @@ bool DetectorSimulator::nextFrame()
     frame.index = m_nextIndex;
     frame.total = total;
     frame.angleDeg = m_sequence.gantryAngleDeg(m_nextIndex);
+    if (m_nextIndex == 0 || m_nextIndex == total - 1) {
+        CBCT_LOG_DEBUG("device", "出帧 index={} total={} angle={:.2f}",
+                       m_nextIndex, total, frame.angleDeg);
+    }
     ++m_nextIndex;
 
     if (m_mailbox) {

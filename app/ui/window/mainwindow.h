@@ -55,6 +55,10 @@ public slots:
     /// 采集启动：右侧切到 2D 投影页并清空画面
     void showAcquisitionView();
 
+protected:
+    /// 点叉关闭：接受并退出整个应用（避免残留线程导致进程不退）
+    void closeEvent(QCloseEvent *event) override;
+
 private:
     Ui::MainWindow *ui;
 };

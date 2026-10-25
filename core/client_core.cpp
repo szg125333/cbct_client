@@ -1,5 +1,6 @@
 #include "client_core.h"
 
+#include "common/log_service.h"
 #include "db/database_service.h"
 #include "device/detector_simulator.h"
 #include "device/frame_mailbox.h"
@@ -18,11 +19,43 @@ void ClientCore::initialize()
     if (m_initialized) {
         return;
     }
+    CBCT_LOG_INFO("core", "ClientCore::initialize 开始");
     m_recipeManager->load();
-    // 打开 SQLite（client.db）并建表；失败只发 dbError，不中断 UI
-    m_database->initialize();
+    const bool dbOk = m_database->initialize();
+    CBCT_LOG_INFO("core", "ClientCore::initialize 完成 db_ok={}", dbOk ? 1 : 0);
     m_initialized = true;
     emit ready();
+}
+
+void ClientCore::shutdown()
+{
+    if (m_shutdownDone) {
+        return;
+    }
+    m_shutdownDone = true;
+    CBCT_LOG_INFO("core", "ClientCore::shutdown 开始");
+
+    // 一律不用 BlockingQueued：避免目标线程已忙/已退出时关窗死等
+
+    // 1) 唤醒可能阻塞在队列上的采集线程
+    if (m_mailbox) {
+        m_mailbox->abort();
+    }
+
+    // 2) 停 detector 线程事件循环（定时器随线程结束）
+    if (m_detectorThread) {
+        m_detectorThread->quit();
+        // 有限等待；超时也继续，保证进程能退出
+        m_detectorThread->wait(1500);
+    }
+
+    // 3) 停数据库线程
+    if (m_database) {
+        m_database->shutdown();
+    }
+
+    m_initialized = false;
+    CBCT_LOG_INFO("core", "ClientCore::shutdown 完成");
 }
 
 RecipeManager &ClientCore::recipeManager()
@@ -57,18 +90,19 @@ ClientCore::ClientCore(QObject *parent)
     m_detectorThread->setObjectName(QStringLiteral("detector-worker"));
     m_detectorThread->start();
 
-    // DatabaseService 自己管理 db 线程
     m_database = new DatabaseService(this);
 }
 
 ClientCore::~ClientCore()
 {
+    shutdown();
+
     if (m_detectorThread) {
         m_detectorThread->quit();
-        m_detectorThread->wait(3000);
+        m_detectorThread->wait(500);
     }
-    delete m_detector;
     delete m_mailbox;
+    m_mailbox = nullptr;
 }
 
 } // namespace cbct

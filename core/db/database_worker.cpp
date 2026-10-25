@@ -1,5 +1,7 @@
 #include "db/database_worker.h"
 
+#include "common/log_service.h"
+
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -57,6 +59,7 @@ bool DatabaseWorker::open(const QString &dbPath)
     if (!db.open()) {
         const QString err = QStringLiteral("打开数据库失败: %1 — %2")
                                 .arg(dbPath, db.lastError().text());
+        CBCT_LOG_ERROR("db", err.toStdString());
         m_open = false;
         emit errorOccurred(err);
         emit opened(false, err);
@@ -79,6 +82,7 @@ bool DatabaseWorker::open(const QString &dbPath)
     }
 
     m_open = true;
+    CBCT_LOG_INFO("db", "数据库已打开: {}", dbPath.toStdString());
     emit opened(true, QStringLiteral("ok"));
     return true;
 }
@@ -88,6 +92,7 @@ void DatabaseWorker::close()
     if (m_connectionName.isEmpty()) {
         return;
     }
+    CBCT_LOG_DEBUG("db", "关闭数据库连接 {}", m_connectionName.toStdString());
     {
         QSqlDatabase db = QSqlDatabase::database(m_connectionName, false);
         if (db.isValid()) {
@@ -161,10 +166,15 @@ void DatabaseWorker::insertRecord(const DetectionRecord &record)
     q.addBindValue(finished.toString(Qt::ISODate));
 
     if (!q.exec()) {
-        emit errorOccurred(QStringLiteral("INSERT 失败: %1").arg(q.lastError().text()));
+        const QString err = QStringLiteral("INSERT 失败: %1").arg(q.lastError().text());
+        CBCT_LOG_ERROR("db", err.toStdString());
+        emit errorOccurred(err);
         return;
     }
-    emit recordInserted(q.lastInsertId().toLongLong());
+    const qint64 newId = q.lastInsertId().toLongLong();
+    CBCT_LOG_INFO("db", "INSERT detection_record id={} recipe={} status={}",
+                  newId, record.recipeName.toStdString(), record.status.toStdString());
+    emit recordInserted(newId);
 }
 
 void DatabaseWorker::queryRecent(int limit)
@@ -209,6 +219,7 @@ void DatabaseWorker::queryRecent(int limit)
         r.finishedAt = QDateTime::fromString(q.value(6).toString(), Qt::ISODate);
         out.append(r);
     }
+    CBCT_LOG_DEBUG("db", "queryRecent limit={} count={}", lim, static_cast<int>(out.size()));
     emit recentRecords(out);
 }
 

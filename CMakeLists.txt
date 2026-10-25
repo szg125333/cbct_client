@@ -15,6 +15,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # 与系统 VTK 保持一致：Qt5（Ubuntu 的 libvtk9-qt 基于 Qt5 编译）
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Sql)
+find_package(spdlog REQUIRED)
 
 # VTK + Qt GUI（QVTKOpenGLNativeWidget 用于显示 vtkImageData）
 set(VTK_QT_VERSION 5 CACHE STRING "Qt version for VTK" FORCE)

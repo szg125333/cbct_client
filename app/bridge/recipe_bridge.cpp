@@ -1,6 +1,7 @@
 #include "bridge/recipe_bridge.h"
 
 #include "client_core.h"
+#include "common/log_service.h"
 #include "recipe/recipe_manager.h"
 
 #include <algorithm>
@@ -65,7 +66,9 @@ QString RecipeBridge::summaryOf(const QString &id) const
 bool RecipeBridge::addRecipe(const cbct::Recipe &recipe, QString *error)
 {
     cbct::ClientCore::instance().initialize();
+    CBCT_LOG_INFO("bridge", "新增配方 name={}", recipe.name.toStdString());
     if (!cbct::ClientCore::instance().recipeManager().add(recipe)) {
+        CBCT_LOG_ERROR("bridge", "新增配方失败 name={}", recipe.name.toStdString());
         if (error) {
             *error = QStringLiteral("保存配方失败");
         }
@@ -84,5 +87,6 @@ void RecipeBridge::reloadFromCore()
                   return a.name.localeAwareCompare(b.name) < 0;
               });
 
+    CBCT_LOG_DEBUG("bridge", "配方列表刷新 count={}", static_cast<int>(m_recipes.size()));
     emit recipesUpdated();
 }

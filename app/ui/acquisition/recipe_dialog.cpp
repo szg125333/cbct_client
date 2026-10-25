@@ -1,6 +1,8 @@
 #include "recipe_dialog.h"
 #include "ui_recipe_dialog.h"
 
+#include "common/log_service.h"
+
 #include <QUuid>
 
 RecipeDialog::RecipeDialog(QWidget *parent)
@@ -37,10 +39,12 @@ cbct::Recipe RecipeDialog::recipe() const
 void RecipeDialog::onAccept()
 {
     if (ui->leName->text().trimmed().isEmpty()) {
+        CBCT_LOG_WARN("ui", "新增配方：名称为空，拒绝保存");
         ui->leName->setFocus();
         return;
     }
     m_recipe = collectRecipe();
+    CBCT_LOG_INFO("ui", "新增配方对话框确认 name={}", m_recipe.name.toStdString());
     accept();
 }
 

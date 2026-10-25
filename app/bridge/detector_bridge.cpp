@@ -2,6 +2,7 @@
 
 #include "client_core.h"
 #include "common/app_paths.h"
+#include "common/log_service.h"
 #include "device/detector_simulator.h"
 #include "device/detector_types.h"
 
@@ -58,6 +59,7 @@ bool DetectorBridge::startWithRecipe(const cbct::Recipe &recipe, QString *error)
     box.clear(); // 上一轮残留帧丢掉
 
     const QString dir = cbct::paths::simulatedProjectionDir();
+    CBCT_LOG_INFO("bridge", "请求开始采集 recipe={}", recipe.name.toStdString());
 
     bool ok = false;
     // BlockingQueued：UI 线程等到工作线程跑完 begin 再继续（可拿到成功/失败）
@@ -70,26 +72,29 @@ bool DetectorBridge::startWithRecipe(const cbct::Recipe &recipe, QString *error)
         Q_ARG(QString, dir));
 
     if (!invoked) {
+        CBCT_LOG_ERROR("bridge", "beginAcquisition invoke 失败");
         if (error) {
             *error = QStringLiteral("无法调用采集线程 beginAcquisition");
         }
         return false;
     }
     if (!ok) {
+        CBCT_LOG_ERROR("bridge", "beginAcquisition 失败: {}", det.lastError().toStdString());
         if (error) {
             *error = det.lastError();
         }
         return false;
     }
 
+    CBCT_LOG_INFO("bridge", "采集已启动");
     emit started();
     return true;
 }
 
 void DetectorBridge::stop()
 {
+    CBCT_LOG_INFO("bridge", "请求停止采集");
     auto &det = cbct::ClientCore::instance().detector();
-    // Queued：不阻塞 UI；工作线程下个事件循环里 endAcquisition
     QMetaObject::invokeMethod(&det, "endAcquisition", Qt::QueuedConnection);
     emit stopped();
 }
