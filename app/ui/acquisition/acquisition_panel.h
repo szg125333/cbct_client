@@ -6,6 +6,7 @@
 #define ACQUISITION_PANEL_H
 
 #include "db/detection_record.h"
+#include "ois/ois_types.h"
 #include "recipe/recipe_params.h"
 
 #include <QWidget>
@@ -13,6 +14,7 @@
 class RecipeBridge;
 class DetectorBridge;
 class RecordBridge;
+class OisBridge;
 
 namespace Ui {
 class AcquisitionPanel;
@@ -44,6 +46,11 @@ private slots:
     void setupRecipeCombo();
     void onStartClicked();
     void onStopClicked();
+    void onDownloadClicked();
+    void onOisStudiesReady(const QList<cbct::OisStudy> &studies);
+    void onOisDownloadDone(const cbct::OisDownloadResult &result);
+    void onOisProgress(int framesDone, int framesTotal, qint64 bytes);
+    void onOisFailed(const QString &message);
 
 private:
     void setupRecordsTable();
@@ -66,8 +73,17 @@ private:
     RecipeBridge *m_recipeBridge = nullptr;
     DetectorBridge *m_detectorBridge = nullptr;
     RecordBridge *m_recordBridge = nullptr; ///< 检测记录读写桥
+    OisBridge *m_oisBridge = nullptr;       ///< OIS 服务器桥接
     QString m_currentRecipeName;
     QString m_currentRecipeId;              ///< 当前配方 id（入库用）
+
+    /// 下载流程缓存：查询到的检查/序列，用于后续 get_ct_image
+    QList<cbct::OisStudy> m_oisStudies;
+    QList<cbct::OisSeries> m_oisSeries;
+    QString m_downloadPatientId;
+    QString m_downloadStudyUid;
+    QString m_downloadSeriesUid;
+    bool m_downloadPending = false;         ///< true=正在下载流程中
 };
 
 #endif // ACQUISITION_PANEL_H

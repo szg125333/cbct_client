@@ -28,3 +28,6 @@ Thumbs.db
 
 # MiMoCode local plans/state
 .mimocode/
+
+# 本地模拟投影数据（~2.8G，不入库）
+data/

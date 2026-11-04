@@ -19,6 +19,7 @@ class RecipeManager;      ///< 配方管理（JSON 持久化）
 class DetectorSimulator;  ///< 平板采集模拟器（工作线程）
 class FrameMailbox;       ///< 采集帧有界队列
 class DatabaseService;    ///< SQLite 服务（db 工作线程）
+class OisService;         ///< OIS 影像服务器客户端（ois-worker 线程）
 
 /**
  * @class ClientCore
@@ -49,6 +50,7 @@ public:
     DetectorSimulator &detector();
     FrameMailbox &frameMailbox();
     DatabaseService &database();
+    OisService &ois();
 
 signals:
     void ready();
@@ -61,7 +63,9 @@ private:
     DetectorSimulator *m_detector = nullptr;
     FrameMailbox *m_mailbox = nullptr;
     DatabaseService *m_database = nullptr; ///< SQLite 门面
+    OisService *m_ois = nullptr;           ///< OIS 客户端
     QThread *m_detectorThread = nullptr;
+    QThread *m_oisThread = nullptr;        ///< OIS 工作线程
     bool m_initialized = false;
     bool m_shutdownDone = false; ///< shutdown 幂等
 };

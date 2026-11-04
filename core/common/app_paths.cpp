@@ -11,7 +11,8 @@ const char kRecipeFileName[] = "recipes.json";
 const char kDeviceConfigFileName[] = "device_config.json";
 const char kLogFileName[] = "client.log";
 const char kDbFileName[] = "client.db";
-const char kDefaultSimulatedProjectionDir[] = "/mnt/hgfs/share/catphan";
+const char kDefaultSimulatedProjectionDir[] = "/home/szg/code/cbct_client/data/catphan";
+const char kOisDownloadRootDir[] = "/home/szg/code/cbct_client/data/ois_downloads";
 
 namespace {
 /// 运行时覆盖的投影目录；空表示未设置
@@ -42,6 +43,11 @@ QString logFilePath()
 QString databaseFilePath()
 {
     return appDataDir() + QLatin1Char('/') + QLatin1String(kDbFileName);
+}
+
+QString oisDownloadRootDir()
+{
+    return QString::fromLatin1(kOisDownloadRootDir);
 }
 
 bool ensureDirFor(const QString &filePath)

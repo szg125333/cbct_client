@@ -49,7 +49,7 @@ public slots:
     /**
      * @brief 在工作线程执行：校验参数 → 打开序列 → 启动定时出帧
      * @param params 平板参数（来自当前配方）
-     * @param projectionDir 投影数据目录（如 /mnt/hgfs/share/catphan）
+     * @param projectionDir 投影数据目录（如 data/catphan）
      * @return 成功返回 true；失败原因写入 m_lastError
      */
     bool beginAcquisition(const cbct::DetectorParams &params, const QString &projectionDir);

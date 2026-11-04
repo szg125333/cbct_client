@@ -2,6 +2,7 @@
 #include "ui_acquisition_panel.h"
 
 #include "bridge/detector_bridge.h"
+#include "bridge/ois_bridge.h"
 #include "bridge/record_bridge.h"
 #include "bridge/recipe_bridge.h"
 #include "client_core.h"
@@ -28,6 +29,7 @@ AcquisitionPanel::AcquisitionPanel(QWidget *parent)
     , m_recipeBridge(new RecipeBridge(this))
     , m_detectorBridge(new DetectorBridge(this))
     , m_recordBridge(new RecordBridge(this))
+    , m_oisBridge(new OisBridge(this))
 {
     ui->setupUi(this);
 
@@ -84,6 +86,21 @@ AcquisitionPanel::AcquisitionPanel(QWidget *parent)
     if (cbct::ClientCore::instance().database().isReady()) {
         m_recordBridge->reloadRecent(100);
     }
+
+    // ---- OIS 下载 ----
+    connect(ui->btnDownload, &QPushButton::clicked,
+            this, &AcquisitionPanel::onDownloadClicked);
+    connect(m_oisBridge, &OisBridge::statusText, this, [this](const QString &t) {
+        ui->lbOisStatus->setText(tr("OIS：%1").arg(t));
+    });
+    connect(m_oisBridge, &OisBridge::failed,
+            this, &AcquisitionPanel::onOisFailed);
+    connect(m_oisBridge, &OisBridge::studiesReady,
+            this, &AcquisitionPanel::onOisStudiesReady);
+    connect(m_oisBridge, &OisBridge::downloadDone,
+            this, &AcquisitionPanel::onOisDownloadDone);
+    connect(m_oisBridge, &OisBridge::downloadProgress,
+            this, &AcquisitionPanel::onOisProgress);
 }
 
 AcquisitionPanel::~AcquisitionPanel()
@@ -303,4 +320,65 @@ bool AcquisitionPanel::currentRecipe(cbct::Recipe &out) const
     const QString id = data.toString();
     out = cbct::ClientCore::instance().recipeManager().findById(id);
     return !out.id.isEmpty();
+}
+
+void AcquisitionPanel::onDownloadClicked()
+{
+    CBCT_LOG_INFO("ui", "用户点击从 OIS 下载");
+    ui->btnDownload->setEnabled(false);
+    ui->lbOisStatus->setText(tr("OIS：正在连接服务器…"));
+    m_downloadPending = true;
+    m_oisStudies.clear();
+    m_oisSeries.clear();
+    m_oisBridge->fetchStudies();
+}
+
+void AcquisitionPanel::onOisStudiesReady(const QList<cbct::OisStudy> &studies)
+{
+    m_oisStudies = studies;
+    if (studies.isEmpty()) {
+        onOisFailed(tr("服务器未返回检查列表"));
+        return;
+    }
+
+    // 取第一条检查填患者信息（模拟服务器多为演示数据）
+    const cbct::OisStudy &st = studies.first();
+    ui->lePatientName->setText(st.patientName);
+    ui->lePatientId->setText(st.studyId);
+    ui->leStudyId->setText(st.studyId);
+
+    m_downloadPatientId = st.studyId;   // 演示协议：用 study_id 作为 patient_id 路径段
+    m_downloadStudyUid = st.studyId;
+    m_downloadSeriesUid = QStringLiteral("SER001");
+
+    ui->lbOisStatus->setText(tr("OIS：已取检查，准备下载序列 %1…").arg(m_downloadSeriesUid));
+    m_oisBridge->download(m_downloadPatientId, m_downloadStudyUid, m_downloadSeriesUid);
+}
+
+void AcquisitionPanel::onOisProgress(int framesDone, int framesTotal, qint64 bytes)
+{
+    Q_UNUSED(bytes)
+    if (framesTotal > 0) {
+        ui->lbOisStatus->setText(
+            tr("OIS：下载中 %1/%2 帧").arg(framesDone).arg(framesTotal));
+    } else {
+        ui->lbOisStatus->setText(tr("OIS：下载中 %1 帧").arg(framesDone));
+    }
+}
+
+void AcquisitionPanel::onOisDownloadDone(const cbct::OisDownloadResult &result)
+{
+    m_downloadPending = false;
+    ui->btnDownload->setEnabled(true);
+    ui->lbOisStatus->setText(
+        tr("OIS：完成，%1 帧 → %2").arg(result.fileCount).arg(result.localDir));
+    CBCT_LOG_INFO("ui", "OIS 下载完成 dir={}", result.localDir.toStdString());
+}
+
+void AcquisitionPanel::onOisFailed(const QString &message)
+{
+    m_downloadPending = false;
+    ui->btnDownload->setEnabled(true);
+    ui->lbOisStatus->setText(tr("OIS：失败 %1").arg(message));
+    CBCT_LOG_ERROR("ui", "OIS 失败: {}", message.toStdString());
 }

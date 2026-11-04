@@ -34,6 +34,9 @@ QString databaseFilePath();
 /// 写文件前确保父目录存在
 bool ensureDirFor(const QString &filePath);
 
+/// OIS 下载根目录：项目 data/ois_downloads/{patient}/{study}/{series}/
+QString oisDownloadRootDir();
+
 /**
  * 模拟投影数据目录（HIS 序列）。
  * 优先级：setSimulatedProjectionDir → 环境变量 CBCT_SIM_PROJ_DIR → 默认
