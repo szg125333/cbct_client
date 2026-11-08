@@ -42,12 +42,16 @@ find_package(VTK REQUIRED COMPONENTS
     CommonCore
     CommonDataModel
     ImagingCore
+    ImagingGeneral
+    ImagingMath
     InteractionStyle
     InteractionImage
     RenderingCore
     RenderingOpenGL2
     RenderingUI
     RenderingFreeType
+    RenderingVolume
+    RenderingVolumeOpenGL2
     GUISupportQt
 )
 message(STATUS "VTK version: ${VTK_VERSION}, Qt: ${VTK_QT_VERSION}")

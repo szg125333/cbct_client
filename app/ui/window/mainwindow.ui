@@ -74,6 +74,7 @@
          </property>
          <widget class="ThreeViewPanel" name="threeViewPanel"/>
          <widget class="AcquisitionImagePanel" name="acquisitionImagePanel"/>
+         <widget class="Volume3dPanel" name="volume3dPanel"/>
         </widget>
        </item>
       </layout>
@@ -121,6 +122,11 @@
     <addaction name="actionResetViews"/>
     <addaction name="actionContourList"/>
     <addaction name="actionBlendRatio"/>
+    <addaction name="separator"/>
+    <addaction name="actionView3D"/>
+    <addaction name="actionBackToThreeView"/>
+    <addaction name="actionPresetBone"/>
+    <addaction name="actionPresetSoftTissue"/>
     <addaction name="separator"/>
     <addaction name="actionModeNormal"/>
     <addaction name="actionModePan"/>
@@ -174,6 +180,32 @@
   <action name="actionOpenSecondary">
    <property name="text">
     <string>打开叠加图像（CBCT）…</string>
+   </property>
+  </action>
+  <action name="actionView3D">
+   <property name="text">
+    <string>3D 视图</string>
+   </property>
+  </action>
+  <action name="actionBackToThreeView">
+   <property name="text">
+    <string>返回三视图</string>
+   </property>
+  </action>
+  <action name="actionPresetBone">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>3D 预设：骨窗</string>
+   </property>
+  </action>
+  <action name="actionPresetSoftTissue">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>3D 预设：软组织</string>
    </property>
   </action>
   <action name="actionBlendRatio">
@@ -338,6 +370,11 @@
    <class>AcquisitionImagePanel</class>
    <extends>QWidget</extends>
    <header>acquisition_image_panel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Volume3dPanel</class>
+   <extends>QWidget</extends>
+   <header>volume_3d_panel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

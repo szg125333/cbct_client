@@ -1,11 +1,10 @@
 /**
  * @file three_view_panel.h
- * @brief 右侧医学图像三视图：左半轴状位 + 右半上下 矢状/冠状
+ * @brief 右侧医学图像三视图：布局可切换（1x1/1x2/2x1/2x2/3x3）
  *
- * 布局沿用 .ui 的 3 个 QVTKOpenGLNativeWidget；渲染/交互引擎为
- * DicomImageStudy 移植来的 VtkViewRenderer + ThreeViewController
- * （见 ui/view/engine/）。对外只暴露 setDicomVolume / setInteractionMode /
- * resetViews / clearMeasurements，VTK 细节不外泄。
+ * 布局由 .ui 的 3 个 QVTKOpenGLNativeWidget + 代码里 QGridLayout 摆放；
+ * 渲染/交互引擎为 DicomImageStudy 移植来的 VtkViewRenderer + ThreeViewController
+ * （见 ui/view/engine/）。
  */
 #ifndef THREE_VIEW_PANEL_H
 #define THREE_VIEW_PANEL_H
@@ -22,6 +21,7 @@
 
 class vtkImageData;
 class QVTKOpenGLNativeWidget;
+class QGridLayout;
 class VtkViewRenderer;
 class ThreeViewController;
 class IViewRenderer;
@@ -31,10 +31,15 @@ namespace Ui {
 class ThreeViewPanel;
 }
 
-/**
- * @class ThreeViewPanel
- * @brief 布局：viewAxial | viewSagittal / viewCoronal
- */
+/// 视图布局（工具栏布局组）
+enum class ViewLayout {
+    OneByOne,   ///< 仅轴状位
+    OneByTwo,   ///< 轴状 | 矢状
+    TwoByOne,   ///< 轴状 / 冠状
+    TwoByTwo,   ///< 轴状 | 矢状/冠状（默认）
+    ThreeByOne, ///< 三视图一行
+};
+
 class ThreeViewPanel : public QWidget
 {
     Q_OBJECT
@@ -80,20 +85,39 @@ public:
     /// 清除全部测量/标注
     void clearMeasurements();
 
+    /// 视图布局切换（工具栏布局组按钮）
+    void setViewLayout(ViewLayout layout);
+    ViewLayout viewLayout() const { return m_layout; }
+
+    /// 边缘增强开/关（对当前显示图做非锐化掩膜，几何不变）
+    void setEdgeEnhanced(bool on);
+    bool edgeEnhanced() const { return m_edgeEnhanced; }
+
+    /// 隐藏边框：去掉视图间分隔与控件边框
+    void setBordersHidden(bool hidden);
+    bool bordersHidden() const { return m_bordersHidden; }
+
     ThreeViewController *controller() const { return m_controller; }
 
     void renderAll(); ///< 三个RenderWindow 刷新
 
 private:
     void setupEngine();
+    void applyViewLayout();
 
     Ui::ThreeViewPanel *ui;
 
     std::unique_ptr<VtkViewRenderer> m_renderers[3];
     ThreeViewController *m_controller = nullptr; ///< 由本面板创建并拥有
+    QGridLayout *m_grid = nullptr;
 
     vtkImageData *m_image = nullptr; ///< 当前体数据（引用计数 +1）
     ImageBlend m_blend;              ///< CT/CBCT 混合控制器
+
+    ViewLayout m_layout = ViewLayout::TwoByTwo;
+    bool m_edgeEnhanced = false;
+    bool m_bordersHidden = false;
+    vtkImageData *m_enhancedImage = nullptr; ///< 边缘增强结果（引用计数 +1）
 };
 
 #endif // THREE_VIEW_PANEL_H

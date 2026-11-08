@@ -77,6 +77,10 @@ public:
     /// 当前体数据的 DICOM 元数据（core 解析结果；UI 表格用）
     const std::map<std::string, std::string> &metadata() const { return m_volume.metadata; }
 
+    /// 像素→HU 换算系数（3D 预设按 HU 定义）
+    double pixelSlope() const { return m_volume.slope; }
+    double pixelIntercept() const { return m_volume.intercept; }
+
     /// 上次失败原因
     QString lastError() const { return m_lastError; }
 

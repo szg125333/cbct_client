@@ -123,6 +123,23 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::showThreeView);
     connect(ui->actionShowAcquisition, &QAction::triggered,
             this, &MainWindow::showAcquisitionView);
+    // 3D 体绘制
+    connect(ui->actionView3D, &QAction::triggered, this, [this]() {
+        showVolume3dView();
+    });
+    connect(ui->actionBackToThreeView, &QAction::triggered, this, [this]() {
+        showThreeView();
+    });
+    connect(ui->actionPresetBone, &QAction::triggered, this, [this]() {
+        ui->volume3dPanel->setPreset(VolumePreset::Bone);
+        ui->actionPresetBone->setChecked(true);
+        ui->actionPresetSoftTissue->setChecked(false);
+    });
+    connect(ui->actionPresetSoftTissue, &QAction::triggered, this, [this]() {
+        ui->volume3dPanel->setPreset(VolumePreset::SoftTissue);
+        ui->actionPresetSoftTissue->setChecked(true);
+        ui->actionPresetBone->setChecked(false);
+    });
     connect(ui->actionResetViews, &QAction::triggered, this, [this]() {
         ui->threeViewPanel->resetViews();
     });
@@ -263,6 +280,21 @@ void MainWindow::showAcquisitionView()
     ui->leftPanel->setCurrentPage(0);
 }
 
+void MainWindow::showVolume3dView()
+{
+    CBCT_LOG_DEBUG("ui", "右侧切换到 3D 体绘制");
+    // 喂入当前体数据（slope/intercept 供 HU 预设换算）
+    if (m_dicomBridge && m_dicomBridge->image()) {
+        ui->volume3dPanel->setVolume(m_dicomBridge->image(),
+                                     m_dicomBridge->pixelSlope(),
+                                     m_dicomBridge->pixelIntercept());
+    } else {
+        statusBar()->showMessage(tr("请先打开 DICOM 数据再使用 3D 视图"), 4000);
+        return;
+    }
+    ui->rightStack->setCurrentWidget(ui->volume3dPanel);
+}
+
 void MainWindow::openDicomDirectory()
 {
     const QString dir = QFileDialog::getExistingDirectory(
@@ -399,6 +431,64 @@ void MainWindow::onToolbarButton(const QString &objectName, bool checked)
             applyMode(b, checked);
             return;
         }
+    }
+
+    // ---- 布局组：切换三视图摆放 ----
+    static const struct {
+        const char *name;
+        ViewLayout layout;
+    } kLayouts[] = {
+        {"btnLayout1x1", ViewLayout::OneByOne},
+        {"btnLayout1x2", ViewLayout::OneByTwo},
+        {"btnLayout2x1", ViewLayout::TwoByOne},
+        {"btnLayout2x2", ViewLayout::TwoByTwo},
+        {"btnLayout3x3", ViewLayout::ThreeByOne},
+        {"btnMultiGrid", ViewLayout::ThreeByOne},
+        {"btnCustomGrid", ViewLayout::TwoByTwo},
+    };
+    for (const auto &l : kLayouts) {
+        if (objectName == QLatin1String(l.name)) {
+            ui->threeViewPanel->setViewLayout(l.layout);
+            CBCT_LOG_DEBUG("ui", "切换布局 {}", l.name);
+            return;
+        }
+    }
+
+    // ---- 边缘增强 / 隐藏边框（toggle）----
+    if (objectName == QLatin1String("btnEdgeEnhance")) {
+        const bool on = checked || !ui->threeViewPanel->edgeEnhanced();
+        ui->threeViewPanel->setEdgeEnhanced(on);
+        statusBar()->showMessage(on ? tr("边缘增强：开") : tr("边缘增强：关"), 3000);
+        return;
+    }
+    if (objectName == QLatin1String("btnHideBorder")) {
+        const bool hidden = checked || !ui->threeViewPanel->bordersHidden();
+        ui->threeViewPanel->setBordersHidden(hidden);
+        return;
+    }
+
+    // ---- 3D：进入 3D 视图 / 切换交互模式 ----
+    if (objectName == QLatin1String("btn3DView")) {
+        showVolume3dView();
+        return;
+    }
+    if (objectName == QLatin1String("btn3DRotate")) {
+        ui->volume3dPanel->setInteractionMode(View3dMode::Rotate);
+        ui->rightStack->setCurrentWidget(ui->volume3dPanel);
+        statusBar()->showMessage(tr("3D 交互：旋转"), 3000);
+        return;
+    }
+    if (objectName == QLatin1String("btn3DPan")) {
+        ui->volume3dPanel->setInteractionMode(View3dMode::Pan);
+        ui->rightStack->setCurrentWidget(ui->volume3dPanel);
+        statusBar()->showMessage(tr("3D 交互：平移"), 3000);
+        return;
+    }
+    if (objectName == QLatin1String("btn3DZoom")) {
+        ui->volume3dPanel->setInteractionMode(View3dMode::Zoom);
+        ui->rightStack->setCurrentWidget(ui->volume3dPanel);
+        statusBar()->showMessage(tr("3D 交互：缩放"), 3000);
+        return;
     }
 
     // 文件打开：目录 / 文件二选一
