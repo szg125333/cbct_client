@@ -4,6 +4,8 @@
 #include "renderer/OverlayManager/OverlayFactory.h"
 #include "renderer/OverlayManager/DistanceMeasureManager/SimpleDistanceMeasureManager.h"
 #include "renderer/OverlayManager/AngleMeasureManager/SimpleAngleMeasureManager.h"
+#include "renderer/OverlayManager/ROIManager/SimpleROIManager.h"
+#include "renderer/OverlayManager/FreehandROIManager/SimpleFreehandROIManager.h"
 #include "controller/Strategy/InteractionStrategyFactory.h"
 #include "controller/Strategy/IInteractionStrategy.h"
 #include "controller/Strategy/ImageDragStrategy/ImageDragStrategy.h"
@@ -478,6 +480,30 @@ std::vector<MeasurementRecord> ThreeViewController::CollectMeasurementRecords() 
 		}
 		if (auto* angle = om->GetFeature<SimpleAngleMeasureManager>()) {
 			for (auto& r : angle->GetMeasurementRecords()) {
+				r.viewIndex = i;
+				out.push_back(r);
+			}
+		}
+	}
+	return out;
+}
+
+std::vector<RoiStatsRecord> ThreeViewController::CollectRoiStats() const
+{
+	std::vector<RoiStatsRecord> out;
+	for (int i = 0; i < 3; ++i) {
+		if (!m_renderers[i]) continue;
+		auto* om = m_renderers[i]->GetOverlayManager();
+		if (!om) continue;
+
+		if (auto* rect = om->GetFeature<SimpleROIManager>()) {
+			for (auto& r : rect->GetStatsRecords()) {
+				r.viewIndex = i;
+				out.push_back(r);
+			}
+		}
+		if (auto* freehand = om->GetFeature<SimpleFreehandROIManager>()) {
+			for (auto& r : freehand->GetStatsRecords()) {
 				r.viewIndex = i;
 				out.push_back(r);
 			}

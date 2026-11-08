@@ -35,6 +35,8 @@
 #include <functional>
 
 class DicomBridge;
+enum class WwPreset;
+enum class VolumePreset;
 
 /// 模式互斥组绑定：工具栏 objectName / 菜单 QAction → InteractionMode
 struct ModeBinding {
@@ -99,12 +101,25 @@ private:
     /// 同步加载 + 进度框（loadFn 返回是否成功）
     void loadWithProgress(const std::function<bool()> &loadFn);
 
-    /// 导出测量数据（btnSave）为 CSV
+    /// 导出测量数据 + ROI 统计（btnSave）为 CSV
     void exportMeasurements();
+
+    /// 应用 2D 窗宽窗位预设（菜单/工具栏共用）
+    void applyWwPreset(WwPreset preset);
+
+    /// 应用 3D 体绘制预设（菜单/工具栏共用）
+    void applyVolumePreset(VolumePreset preset);
+
+    /// 弹框询问混合比例并应用（菜单/工具栏共用）
+    void askAndApplyBlendRatio();
+
+    /// 构建工具栏弹出菜单（窗宽窗位预设 / 3D 预设）
+    void setupToolbarMenus();
 
     Ui::MainWindow *ui;
     DicomBridge *m_dicomBridge = nullptr;
     class ContourListPopup *m_contourPopup = nullptr;
+    bool m_contourVisible = true;  ///< 轮廓整体显隐状态（btnContourToggle）
 };
 
 #endif // MAINWINDOW_H

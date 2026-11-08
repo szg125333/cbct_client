@@ -2,6 +2,7 @@
 
 #include "renderer/OverlayManager/IOverlayFeature.h"
 #include "FreehandStats.h"
+#include "common/Measurement/MeasurementTypes.h"
 #include "renderer/OverlayManager/ROIManager/RoiLabel.h"
 
 #include <array>
@@ -112,6 +113,9 @@ public:
     // ----------------------------------------------------------------
     FreehandStats GetLastStats() const;
     bool          IsDrawing()   const { return m_isDrawing; }
+
+    /// 导出用：当前全部手绘 ROI 的统计（含未完成）
+    std::vector<RoiStatsRecord> GetStatsRecords() const;
 
 private:
     // ----------------------------------------------------------------

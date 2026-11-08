@@ -185,8 +185,11 @@ void ThreeViewPanel::setBordersHidden(bool hidden)
     m_grid->setSpacing(hidden ? 0 : 4);
 }
 
-void ThreeViewPanel::setDicomVolume(vtkImageData *image)
+void ThreeViewPanel::setDicomVolume(vtkImageData *image, double slope, double intercept)
 {
+    m_slope = (slope == 0.0) ? 1.0 : slope;
+    m_intercept = intercept;
+
     if (m_image == image) {
         return;
     }
@@ -287,6 +290,32 @@ std::vector<MeasurementRecord> ThreeViewPanel::measurementRecords() const
 {
     return m_controller ? m_controller->CollectMeasurementRecords()
                         : std::vector<MeasurementRecord>{};
+}
+
+std::vector<RoiStatsRecord> ThreeViewPanel::roiStats() const
+{
+    return m_controller ? m_controller->CollectRoiStats()
+                        : std::vector<RoiStatsRecord>{};
+}
+
+void ThreeViewPanel::applyWwPreset(WwPreset preset)
+{
+    if (!m_controller) return;
+
+    // 预设按 HU 定义；VTK 的 color window/level 作用在原始像素域，
+    // 换算 raw = (HU - intercept) / slope；窗宽只需除以 slope。
+    double huW = 400.0, huL = 40.0;
+    switch (preset) {
+    case WwPreset::Bone:       huW = 2000.0; huL = 400.0;  break;
+    case WwPreset::SoftTissue: huW = 400.0;  huL = 40.0;   break;
+    case WwPreset::Lung:       huW = 1500.0; huL = -600.0; break;
+    case WwPreset::Abdomen:    huW = 350.0;  huL = 50.0;   break;
+    }
+
+    const double rawW = huW / m_slope;
+    const double rawL = (huL - m_intercept) / m_slope;
+    m_controller->SetWindowLevel(rawW, rawL);
+    renderAll();
 }
 
 void ThreeViewPanel::setModeToMeasurement(InteractionMode mode, bool state)

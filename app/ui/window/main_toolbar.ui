@@ -79,16 +79,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QToolButton" name="btn3DView">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QToolButton" name="btnMultiGrid">
      <property name="text">
       <string></string>
@@ -179,6 +169,95 @@
     </widget>
    </item>
    <item>
+    <widget class="QToolButton" name="btn3DView">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btn3DRotate">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btn3DPan">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btn3DZoom">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btn3DPreset">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>3D 预设（骨窗/软组织）</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnBlendRatio">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>混合比例</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="sep3">
+     <property name="frameShape">
+      <enum>QFrame::VLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnWwPreset">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>窗宽窗位预设</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QToolButton" name="btnWindowLevel">
      <property name="text">
       <string></string>
@@ -219,16 +298,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QToolButton" name="btnMeasureRuler">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QToolButton" name="btnPixelProbe">
      <property name="text">
       <string></string>
@@ -239,7 +308,20 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="sep3">
+    <widget class="QToolButton" name="btnContourToggle">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>轮廓显示开关</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="sep4">
      <property name="frameShape">
       <enum>QFrame::VLine</enum>
      </property>
@@ -249,7 +331,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QToolButton" name="btn3DRotate">
+    <widget class="QToolButton" name="btnMeasureRuler">
      <property name="text">
       <string></string>
      </property>
@@ -259,7 +341,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QToolButton" name="btn3DPan">
+    <widget class="QToolButton" name="btnAngleMeasure">
      <property name="text">
       <string></string>
      </property>
@@ -269,12 +351,78 @@
     </widget>
    </item>
    <item>
-    <widget class="QToolButton" name="btn3DZoom">
+    <widget class="QToolButton" name="btnPolygonSelect">
      <property name="text">
       <string></string>
      </property>
      <property name="autoRaise">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnDrawContour">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnClearAll">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>清除全部标注</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="sep5">
+     <property name="frameShape">
+      <enum>QFrame::VLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnMoveCrosshair">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="btnSliceScroll">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>切片滑动</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="sep6">
+     <property name="frameShape">
+      <enum>QFrame::VLine</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
      </property>
     </widget>
    </item>
@@ -309,47 +457,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="sep4">
-     <property name="frameShape">
-      <enum>QFrame::VLine</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="btnDrawContour">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QToolButton" name="btnCutTrim">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="btnAngleMeasure">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="btnPolygonSelect">
      <property name="text">
       <string></string>
      </property>
@@ -362,29 +470,6 @@
     <widget class="QToolButton" name="btnMagicThreshold">
      <property name="text">
       <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="btnMoveCrosshair">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="autoRaise">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="btnSliceScroll">
-     <property name="text">
-      <string></string>
-     </property>
-     <property name="toolTip">
-      <string>切片滑动</string>
      </property>
      <property name="autoRaise">
       <bool>true</bool>
@@ -412,7 +497,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="sep5">
+    <widget class="QFrame" name="sep7">
      <property name="frameShape">
       <enum>QFrame::VLine</enum>
      </property>
@@ -451,6 +536,8 @@
      </property>
     </widget>
    </item>
+
+
    <item>
     <spacer name="horizontalSpacer">
      <property name="orientation">

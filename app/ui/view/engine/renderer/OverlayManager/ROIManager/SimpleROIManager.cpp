@@ -406,6 +406,31 @@ RoiStats SimpleROIManager::GetStats(int roiId) const
     return it != m_rois.end() ? it->second.stats : RoiStats{};
 }
 
+std::vector<RoiStatsRecord> SimpleROIManager::GetStatsRecords() const
+{
+    std::vector<RoiStatsRecord> out;
+    out.reserve(m_rois.size());
+    for (const auto& kv : m_rois) {
+        const RoiRecord& rec = kv.second;
+        const RoiStats& st = rec.stats;
+        if (!st.IsValid()) continue;  // 只导出有像素统计的 ROI
+
+        RoiStatsRecord r;
+        r.kind = RoiStatsRecord::Kind::Rect;
+        r.id = rec.id;
+        r.complete = rec.isComplete;
+        r.area = st.area;
+        r.perimeter = 0.0;  // 矩形 ROI 不算周长
+        r.mean = st.mean;
+        r.stdDev = st.stdDev;
+        r.minVal = st.minVal;
+        r.maxVal = st.maxVal;
+        r.pixelCount = st.pixelCount;
+        out.push_back(r);
+    }
+    return out;
+}
+
 // ============================================================
 //  私有 —— 标签文字
 // ============================================================

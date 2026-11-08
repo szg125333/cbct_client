@@ -102,6 +102,9 @@ public:
 
     /// 导出用：汇总三个视图的全部距离/角度测量
     std::vector<MeasurementRecord> CollectMeasurementRecords() const;
+
+    /// 导出用：汇总三个视图的全部 ROI 统计（矩形 + 手绘）
+    std::vector<RoiStatsRecord> CollectRoiStats() const;
 signals:
     void sliceChanged(int viewIndex, int slice);
     // 新增：图像拖动信号，转发给 UI 层

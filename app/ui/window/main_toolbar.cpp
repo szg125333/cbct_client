@@ -10,17 +10,17 @@ MainToolbar::MainToolbar(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // objectName -> 悬停提示 / 点击打印用的功能名
+    // objectName -> 中文功能名 / 图标资源路径
     //
-    // 分组说明（与 .ui 中分隔符一致）：
-    // 1 文件   2 视图/布局  3 2D 测量与窗宽窗位  4 3D 操作
-    // 5 勾画/角度/选取等测量编辑  6 剪贴板
-    //
-    // 测量相关（首版仅 UI 占位，逻辑后续挂到视图交互）：
-    //   btnMeasureRuler  直线距离标尺（mm，需像素间距）
-    //   btnAngleMeasure  角度测量（三点角）
-    //   btnPixelProbe    单像素 CT 值/HU 探测
-    //   btnMoveCrosshair 十字线定位
+    // 分组说明（与 .ui 中分隔符一致，按功能就近排布）：
+    // 1 文件          打开 / 导出
+    // 2 视图与布局    轴状位、多格、1x1~3x3 布局、隐藏边框
+    // 3 3D            进入 3D、旋转/平移/缩放、3D 预设、混合比例
+    // 4 显示调整      窗宽窗位预设、窗宽窗位、平移、缩放、边缘增强、像素探测、轮廓开关
+    // 5 测量          直线距离、角度、多边形选取、绘制勾画、清除标注
+    // 6 导航          十字准星、切片滑动
+    // 7 图像编辑      裁剪/擦除/魔棒/画笔（未接线）
+    // 8 剪贴板        新增/复制/粘贴（未接线）
     m_objectToAction = {
         {QStringLiteral("btnOpen"),        QStringLiteral("打开 DICOM")},
         {QStringLiteral("btnSave"),        QStringLiteral("保存")},
@@ -36,21 +36,26 @@ MainToolbar::MainToolbar(QWidget *parent)
         {QStringLiteral("btnCustomGrid"),  QStringLiteral("自定义网格")},
         {QStringLiteral("btnHideBorder"),  QStringLiteral("隐藏边框")},
 
+        {QStringLiteral("btnWwPreset"),    QStringLiteral("窗宽窗位预设")},
         {QStringLiteral("btnWindowLevel"), QStringLiteral("2D窗宽窗位")},
         {QStringLiteral("btnPan"),         QStringLiteral("平移")},
         {QStringLiteral("btnZoom"),        QStringLiteral("缩放")},
         {QStringLiteral("btnEdgeEnhance"), QStringLiteral("边缘增强")},
         {QStringLiteral("btnMeasureRuler"),QStringLiteral("测量标尺")}, // 测量：直线距离
         {QStringLiteral("btnPixelProbe"),  QStringLiteral("像素探测")}, // 测量：点像素值
+        {QStringLiteral("btnContourToggle"),QStringLiteral("轮廓开关")},
 
         {QStringLiteral("btn3DRotate"),    QStringLiteral("3D旋转")},
         {QStringLiteral("btn3DPan"),       QStringLiteral("3D平移")},
         {QStringLiteral("btn3DZoom"),      QStringLiteral("3D缩放")},
+        {QStringLiteral("btn3DPreset"),    QStringLiteral("3D预设")},
+        {QStringLiteral("btnBlendRatio"),  QStringLiteral("混合比例")},
         {QStringLiteral("btnRectCrop"),    QStringLiteral("矩形裁剪")},
         {QStringLiteral("btnLassoCrop"),   QStringLiteral("套索裁剪")},
         {QStringLiteral("btnEraseMask"),   QStringLiteral("擦除掩膜")},
 
         {QStringLiteral("btnDrawContour"), QStringLiteral("绘制勾画")},
+        {QStringLiteral("btnClearAll"),    QStringLiteral("清除标注")},
         {QStringLiteral("btnCutTrim"),     QStringLiteral("切割修剪")},
         {QStringLiteral("btnAngleMeasure"),QStringLiteral("角度测量")}, // 测量：三点角
         {QStringLiteral("btnPolygonSelect"),QStringLiteral("多边形选取")},
@@ -81,21 +86,26 @@ MainToolbar::MainToolbar(QWidget *parent)
         {QStringLiteral("btnCustomGrid"),  QStringLiteral(":/icons/custom_grid.png")},
         {QStringLiteral("btnHideBorder"),  QStringLiteral(":/icons/hide_border.png")},
 
+        {QStringLiteral("btnWwPreset"),    QStringLiteral(":/icons/window_level.png")},
         {QStringLiteral("btnWindowLevel"), QStringLiteral(":/icons/window_level.png")},
         {QStringLiteral("btnPan"),         QStringLiteral(":/icons/pan.png")},
         {QStringLiteral("btnZoom"),        QStringLiteral(":/icons/zoom.png")},
         {QStringLiteral("btnEdgeEnhance"), QStringLiteral(":/icons/edge_enhance.png")},
         {QStringLiteral("btnMeasureRuler"),QStringLiteral(":/icons/measure_ruler.png")},
         {QStringLiteral("btnPixelProbe"),  QStringLiteral(":/icons/pixel_probe.png")},
+        {QStringLiteral("btnContourToggle"),QStringLiteral(":/icons/contour_toggle.png")},
 
         {QStringLiteral("btn3DRotate"),    QStringLiteral(":/icons/3d_rotate.png")},
         {QStringLiteral("btn3DPan"),       QStringLiteral(":/icons/3d_pan.png")},
         {QStringLiteral("btn3DZoom"),      QStringLiteral(":/icons/3d_zoom.png")},
+        {QStringLiteral("btn3DPreset"),    QStringLiteral(":/icons/preset_3d.png")},
+        {QStringLiteral("btnBlendRatio"),  QStringLiteral(":/icons/blend_ratio.png")},
         {QStringLiteral("btnRectCrop"),    QStringLiteral(":/icons/rect_crop.png")},
         {QStringLiteral("btnLassoCrop"),   QStringLiteral(":/icons/lasso_crop.png")},
         {QStringLiteral("btnEraseMask"),   QStringLiteral(":/icons/erase_mask.png")},
 
         {QStringLiteral("btnDrawContour"), QStringLiteral(":/icons/draw_contour.png")},
+        {QStringLiteral("btnClearAll"),    QStringLiteral(":/icons/clear_all.png")},
         {QStringLiteral("btnCutTrim"),     QStringLiteral(":/icons/cut_trim.png")},
         {QStringLiteral("btnAngleMeasure"),QStringLiteral(":/icons/angle_measure.png")},
         {QStringLiteral("btnPolygonSelect"),QStringLiteral(":/icons/polygon_select.png")},

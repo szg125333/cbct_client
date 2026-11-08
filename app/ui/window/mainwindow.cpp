@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QMenu>
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QStatusBar>
@@ -60,7 +61,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // ---- DICOM 加载 → 三视图 ----
     connect(m_dicomBridge, &DicomBridge::volumeLoaded, this, [this]() {
-        ui->threeViewPanel->setDicomVolume(m_dicomBridge->image());
+        ui->threeViewPanel->setDicomVolume(m_dicomBridge->image(),
+                                          m_dicomBridge->pixelSlope(),
+                                          m_dicomBridge->pixelIntercept());
         ui->leftPanel->setDicomMetadata(m_dicomBridge->metadata());
         showThreeView();
         statusBar()->showMessage(m_dicomBridge->summary(), 5000);
@@ -101,14 +104,7 @@ MainWindow::MainWindow(QWidget *parent)
                 statusBar()->showMessage(tr("叠加图像已加载"), 5000);
             });
     connect(ui->actionBlendRatio, &QAction::triggered, this, [this]() {
-        bool ok = false;
-        const double v = QInputDialog::getDouble(
-            this, tr("混合比例"),
-            tr("0 = 纯主图（CT），1 = 纯叠加图（CBCT）："),
-            ui->threeViewPanel->blendRatio(), 0.0, 1.0, 2, &ok);
-        if (ok) {
-            ui->threeViewPanel->setBlendRatio(v);
-        }
+        askAndApplyBlendRatio();
     });
     // 测量导出：btnSave
     connect(ui->mainToolbar, &MainToolbar::buttonClicked, this,
@@ -131,14 +127,10 @@ MainWindow::MainWindow(QWidget *parent)
         showThreeView();
     });
     connect(ui->actionPresetBone, &QAction::triggered, this, [this]() {
-        ui->volume3dPanel->setPreset(VolumePreset::Bone);
-        ui->actionPresetBone->setChecked(true);
-        ui->actionPresetSoftTissue->setChecked(false);
+        applyVolumePreset(VolumePreset::Bone);
     });
     connect(ui->actionPresetSoftTissue, &QAction::triggered, this, [this]() {
-        ui->volume3dPanel->setPreset(VolumePreset::SoftTissue);
-        ui->actionPresetSoftTissue->setChecked(true);
-        ui->actionPresetBone->setChecked(false);
+        applyVolumePreset(VolumePreset::SoftTissue);
     });
     connect(ui->actionResetViews, &QAction::triggered, this, [this]() {
         ui->threeViewPanel->resetViews();
@@ -242,11 +234,90 @@ MainWindow::MainWindow(QWidget *parent)
     // 初始模式 = 普通（窗宽窗位）
     applyMode(kModeBindings.front(), true);
 
+    // 工具栏弹出菜单（窗宽窗位预设 / 3D 预设）
+    setupToolbarMenus();
+
     // 启动默认显示三视图；采集时由 showAcquisitionView 切换
     showThreeView();
 
     // 启动即最大化
     showMaximized();
+}
+
+namespace {
+/// 在工具栏里按 objectName 找 QToolButton
+QToolButton *findToolButton(MainToolbar *toolbar, const char *name)
+{
+    return toolbar ? toolbar->findChild<QToolButton *>(QLatin1String(name)) : nullptr;
+}
+}  // namespace
+
+void MainWindow::setupToolbarMenus()
+{
+    // 窗宽窗位预设（btnWwPreset）
+    if (auto *btn = findToolButton(ui->mainToolbar, "btnWwPreset")) {
+        auto *menu = new QMenu(btn);
+        const struct {
+            const char *text;
+            WwPreset preset;
+        } kItems[] = {
+            {QT_TR_NOOP("骨窗 (W2000/L400)"), WwPreset::Bone},
+            {QT_TR_NOOP("软组织窗 (W400/L40)"), WwPreset::SoftTissue},
+            {QT_TR_NOOP("肺窗 (W1500/L-600)"), WwPreset::Lung},
+            {QT_TR_NOOP("腹部窗 (W350/L50)"), WwPreset::Abdomen},
+        };
+        for (const auto &it : kItems) {
+            const WwPreset p = it.preset;
+            menu->addAction(tr(it.text), this, [this, p]() { applyWwPreset(p); });
+        }
+        btn->setMenu(menu);
+        btn->setPopupMode(QToolButton::InstantPopup);
+        btn->setToolTip(tr("窗宽窗位预设"));
+    }
+
+    // 3D 体绘制预设（btn3DPreset）
+    if (auto *btn = findToolButton(ui->mainToolbar, "btn3DPreset")) {
+        auto *menu = new QMenu(btn);
+        menu->addAction(tr("骨窗"), this, [this]() { applyVolumePreset(VolumePreset::Bone); });
+        menu->addAction(tr("软组织"), this, [this]() { applyVolumePreset(VolumePreset::SoftTissue); });
+        menu->addSeparator();
+        menu->addAction(tr("混合比例…"), this, [this]() { askAndApplyBlendRatio(); });
+        btn->setMenu(menu);
+        btn->setPopupMode(QToolButton::InstantPopup);
+        btn->setToolTip(tr("3D 预设"));
+    }
+}
+
+void MainWindow::applyWwPreset(WwPreset preset)
+{
+    ui->threeViewPanel->applyWwPreset(preset);
+    static const char *kNames[] = {"骨窗", "软组织窗", "肺窗", "腹部窗"};
+    const int idx = static_cast<int>(preset);
+    statusBar()->showMessage(
+        tr("窗宽窗位：%1").arg(tr(kNames[(idx >= 0 && idx < 4) ? idx : 1])), 3000);
+}
+
+void MainWindow::applyVolumePreset(VolumePreset preset)
+{
+    ui->volume3dPanel->setPreset(preset);
+    // 同步菜单勾选（菜单与工具栏共用同一状态）
+    const bool bone = (preset == VolumePreset::Bone);
+    ui->actionPresetBone->setChecked(bone);
+    ui->actionPresetSoftTissue->setChecked(!bone);
+    statusBar()->showMessage(bone ? tr("3D 预设：骨窗") : tr("3D 预设：软组织"), 3000);
+}
+
+void MainWindow::askAndApplyBlendRatio()
+{
+    bool ok = false;
+    const double v = QInputDialog::getDouble(
+        this, tr("混合比例"),
+        tr("0 = 纯主图（CT），1 = 纯叠加图（CBCT）："),
+        ui->threeViewPanel->blendRatio(), 0.0, 1.0, 2, &ok);
+    if (ok) {
+        ui->threeViewPanel->setBlendRatio(v);
+        statusBar()->showMessage(tr("混合比例：%1").arg(v, 0, 'f', 2), 3000);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -365,8 +436,9 @@ void MainWindow::openRtStruct()
 void MainWindow::exportMeasurements()
 {
     const auto records = ui->threeViewPanel->measurementRecords();
-    if (records.empty()) {
-        statusBar()->showMessage(tr("没有可导出的测量"), 4000);
+    const auto roiStats = ui->threeViewPanel->roiStats();
+    if (records.empty() && roiStats.empty()) {
+        statusBar()->showMessage(tr("没有可导出的测量或 ROI 统计"), 4000);
         return;
     }
 
@@ -381,12 +453,17 @@ void MainWindow::exportMeasurements()
         return;
     }
     QTextStream out(&f);
-    out << "type,id,view,value,unit,p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,complete\n";
     const char *viewNames[] = {"axial", "sagittal", "coronal"};
+    auto viewName = [&](int i) {
+        return (i >= 0 && i < 3) ? viewNames[i] : "?";
+    };
+
+    // ---- 第一段：距离 / 角度测量 ----
+    out << "# measurements\n";
+    out << "type,id,view,value,unit,p0x,p0y,p0z,p1x,p1y,p1z,p2x,p2y,p2z,complete\n";
     for (const auto &r : records) {
         out << (r.kind == MeasurementRecord::Kind::Distance ? "distance" : "angle")
-            << ',' << r.id << ','
-            << (r.viewIndex >= 0 && r.viewIndex < 3 ? viewNames[r.viewIndex] : "?")
+            << ',' << r.id << ',' << viewName(r.viewIndex)
             << ',' << QString::number(r.value, 'f', 3) << ','
             << (r.kind == MeasurementRecord::Kind::Distance ? "mm" : "deg");
         for (int p = 0; p < 3; ++p) {
@@ -400,8 +477,29 @@ void MainWindow::exportMeasurements()
         }
         out << ',' << (r.complete ? 1 : 0) << '\n';
     }
+
+    // ---- 第二段：ROI 统计（矩形 / 手绘）----
+    out << "# roi_stats\n";
+    out << "kind,id,view,area_mm2,perimeter_mm,mean_hu,sd_hu,min_hu,max_hu,pixels,complete\n";
+    for (const auto &r : roiStats) {
+        out << (r.kind == RoiStatsRecord::Kind::Rect ? "rect" : "freehand")
+            << ',' << r.id << ',' << viewName(r.viewIndex)
+            << ',' << QString::number(r.area, 'f', 3)
+            << ',' << (r.kind == RoiStatsRecord::Kind::Freehand
+                           ? QString::number(r.perimeter, 'f', 3)
+                           : QString())
+            << ',' << QString::number(r.mean, 'f', 3)
+            << ',' << QString::number(r.stdDev, 'f', 3)
+            << ',' << QString::number(r.minVal, 'f', 3)
+            << ',' << QString::number(r.maxVal, 'f', 3)
+            << ',' << r.pixelCount
+            << ',' << (r.complete ? 1 : 0) << '\n';
+    }
     f.close();
-    statusBar()->showMessage(tr("已导出 %1 条测量 → %2").arg(records.size()).arg(file), 5000);
+
+    statusBar()->showMessage(
+        tr("已导出 %1 条测量 / %2 个 ROI → %3")
+            .arg(records.size()).arg(roiStats.size()).arg(file), 5000);
 }
 
 void MainWindow::loadWithProgress(const std::function<bool()> &loadFn)
@@ -488,6 +586,32 @@ void MainWindow::onToolbarButton(const QString &objectName, bool checked)
         ui->volume3dPanel->setInteractionMode(View3dMode::Zoom);
         ui->rightStack->setCurrentWidget(ui->volume3dPanel);
         statusBar()->showMessage(tr("3D 交互：缩放"), 3000);
+        return;
+    }
+    if (objectName == QLatin1String("btnBlendRatio")) {
+        askAndApplyBlendRatio();
+        return;
+    }
+
+    // ---- 轮廓整体显隐（btnContourToggle）----
+    if (objectName == QLatin1String("btnContourToggle")) {
+        const auto rois = ui->threeViewPanel->roiList();
+        if (rois.empty()) {
+            statusBar()->showMessage(tr("未加载 RTSTRUCT 轮廓"), 3000);
+            return;
+        }
+        m_contourVisible = !m_contourVisible;
+        for (const auto &roi : rois) {
+            ui->threeViewPanel->setRoiVisible(roi.roiNumber, m_contourVisible);
+        }
+        statusBar()->showMessage(m_contourVisible ? tr("轮廓：显示") : tr("轮廓：隐藏"), 3000);
+        return;
+    }
+
+    // ---- 清除全部标注（btnClearAll）----
+    if (objectName == QLatin1String("btnClearAll")) {
+        ui->threeViewPanel->clearMeasurements();
+        statusBar()->showMessage(tr("已清除全部标注"), 3000);
         return;
     }
 

@@ -2,9 +2,11 @@
 
 #include "renderer/OverlayManager/IOverlayFeature.h"
 #include "RoiStats.h"
+#include "common/Measurement/MeasurementTypes.h"
 #include "RoiLabel.h"
 
 #include <array>
+#include <vector>
 #include <unordered_map>
 #include <vtkSmartPointer.h>
 
@@ -102,6 +104,9 @@ public:
     RoiStats GetLastStats() const;
     RoiStats GetStats(int roiId) const;
     bool     IsDrawing() const { return m_isDrawing; }
+
+    /// 导出用：当前全部矩形 ROI 的统计（含未完成）
+    std::vector<RoiStatsRecord> GetStatsRecords() const;
 
 private:
     // ----------------------------------------------------------------

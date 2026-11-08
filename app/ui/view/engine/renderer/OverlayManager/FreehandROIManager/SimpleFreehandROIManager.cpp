@@ -277,6 +277,31 @@ FreehandStats SimpleFreehandROIManager::GetLastStats() const
     return it != m_records.end() ? it->second.stats : FreehandStats{};
 }
 
+std::vector<RoiStatsRecord> SimpleFreehandROIManager::GetStatsRecords() const
+{
+    std::vector<RoiStatsRecord> out;
+    out.reserve(m_records.size());
+    for (const auto& kv : m_records) {
+        const FreehandRecord& rec = kv.second;
+        const FreehandStats& st = rec.stats;
+        if (!st.IsValid()) continue;
+
+        RoiStatsRecord r;
+        r.kind = RoiStatsRecord::Kind::Freehand;
+        r.id = rec.id;
+        r.complete = rec.isComplete;
+        r.area = st.area;
+        r.perimeter = st.perimeter;
+        r.mean = st.mean;
+        r.stdDev = st.stdDev;
+        r.minVal = st.minVal;
+        r.maxVal = st.maxVal;
+        r.pixelCount = st.pixelCount;
+        out.push_back(r);
+    }
+    return out;
+}
+
 // ============================================================
 //  预览折线
 // ============================================================

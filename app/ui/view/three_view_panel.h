@@ -31,6 +31,14 @@ namespace Ui {
 class ThreeViewPanel;
 }
 
+/// 窗宽窗位预设（按 HU 定义，内部换算到原始像素域）
+enum class WwPreset {
+    Bone,       ///< 骨窗 2000/400
+    SoftTissue, ///< 软组织窗 400/40
+    Lung,       ///< 肺窗 1500/-600
+    Abdomen,    ///< 腹部窗 350/50
+};
+
 /// 视图布局（工具栏布局组）
 enum class ViewLayout {
     OneByOne,   ///< 仅轴状位
@@ -49,7 +57,8 @@ public:
     ~ThreeViewPanel() override;
 
     /// 注入 DICOM 体数据（调用方/桥接层拥有 image 生命周期，内部 Register）
-    void setDicomVolume(vtkImageData *image);
+    /// slope/intercept 用于把 HU 定义的窗宽窗位预设换算到原始像素域
+    void setDicomVolume(vtkImageData *image, double slope = 1.0, double intercept = 0.0);
 
     /// 交互模式（普通/测量/平移等），转发 ThreeViewController
     void setInteractionMode(InteractionMode mode);
@@ -69,6 +78,12 @@ public:
 
     /// 导出用：汇总全部距离/角度测量
     std::vector<MeasurementRecord> measurementRecords() const;
+
+    /// 导出用：汇总全部 ROI 统计（矩形 + 手绘）
+    std::vector<RoiStatsRecord> roiStats() const;
+
+    /// 应用窗宽窗位预设（HU→原始像素域换算后下发给 controller）
+    void applyWwPreset(WwPreset preset);
 
     /// 单个 ROI 显隐
     void setRoiVisible(int roiNumber, bool visible);
@@ -113,6 +128,8 @@ private:
 
     vtkImageData *m_image = nullptr; ///< 当前体数据（引用计数 +1）
     ImageBlend m_blend;              ///< CT/CBCT 混合控制器
+    double m_slope = 1.0;            ///< 像素→HU 系数（窗宽窗位预设换算用）
+    double m_intercept = 0.0;
 
     ViewLayout m_layout = ViewLayout::TwoByTwo;
     bool m_edgeEnhanced = false;
