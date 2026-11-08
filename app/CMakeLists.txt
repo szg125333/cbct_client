@@ -29,6 +29,7 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/window
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/acquisition
         ${CMAKE_CURRENT_SOURCE_DIR}/ui/view
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/view/engine
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -37,6 +38,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt5::Widgets
         Qt5::Gui
         Qt5::Core
+        Qt5::Concurrent
         ${VTK_LIBRARIES}
 )
 

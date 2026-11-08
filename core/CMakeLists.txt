@@ -17,6 +17,14 @@ target_include_directories(cbct_core
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# 第三方 DICOM 库头文件以 SYSTEM 引入，压低其告警噪音
+if(GDCM_INCLUDE_DIRS)
+    target_include_directories(cbct_core SYSTEM PUBLIC ${GDCM_INCLUDE_DIRS})
+endif()
+if(DCMTK_INCLUDE_DIRS)
+    target_include_directories(cbct_core SYSTEM PUBLIC ${DCMTK_INCLUDE_DIRS})
+endif()
+
 target_link_libraries(cbct_core
     PUBLIC
         Qt5::Core
@@ -24,6 +32,14 @@ target_link_libraries(cbct_core
         Qt5::Sql
         Qt5::Network
         spdlog::spdlog
+        gdcmMSFF
+        gdcmCommon
+        gdcmDICT
+        gdcmDSED
+        gdcmIOD
+        DCMTK::dcmdata
+        DCMTK::ofstd
+        DCMTK::oflog
 )
 
 set_target_properties(cbct_core PROPERTIES

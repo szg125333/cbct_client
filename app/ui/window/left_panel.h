@@ -13,8 +13,11 @@
 #define LEFT_PANEL_H
 
 #include <QWidget>
+#include <map>
+#include <string>
 
 class AcquisitionPanel;
+class QTableWidget;
 
 namespace Ui {
 class LeftPanel;
@@ -35,6 +38,9 @@ public:
     /// 采集页指针（主窗口连开始/结束、帧队列用）；未创建则为 nullptr
     AcquisitionPanel *acquisitionPanel() const { return m_acquisition; }
 
+    /// DICOM 元数据表（第 1 页）：key/value 双列
+    void setDicomMetadata(const std::map<std::string, std::string> &metadata);
+
     /// 追加一页到 stack（title 暂未用于 UI 显示，可留给将来页签）
     int addPage(QWidget *page, const QString &title = QString());
 
@@ -46,6 +52,7 @@ public:
 private:
     Ui::LeftPanel *ui;
     AcquisitionPanel *m_acquisition = nullptr; ///< 第 0 页：采集启动
+    QTableWidget *m_metaTable = nullptr;      ///< 第 1 页：DICOM 元数据
 };
 
 #endif // LEFT_PANEL_H

@@ -3,6 +3,9 @@
 #include "acquisition_panel.h" // ui/acquisition/
 #include "common/log_service.h"
 
+#include <QHeaderView>
+#include <QTableWidget>
+
 LeftPanel::LeftPanel(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LeftPanel)
@@ -14,17 +17,38 @@ LeftPanel::LeftPanel(QWidget *parent)
     // 第 0 页：采集启动界面（配方下拉、开始采集、检测记录表）
     m_acquisition = new AcquisitionPanel(ui->stackWidget);
     ui->stackWidget->addWidget(m_acquisition);
-    ui->stackWidget->setCurrentIndex(0);
 
-    // 后续功能页示例：
-    //   auto *patients = new PatientPanel(ui->stackWidget);
-    //   ui->stackWidget->addWidget(patients);
-    // 再 setCurrentPage 切换；「窗口」菜单可控制本侧栏显隐
+    // 第 1 页：DICOM 元数据表（移植自 DicomImageStudy LeftToolWidget::SetDicomMetadata）
+    m_metaTable = new QTableWidget(ui->stackWidget);
+    m_metaTable->setColumnCount(2);
+    m_metaTable->setHorizontalHeaderLabels({tr("标签"), tr("值")});
+    m_metaTable->horizontalHeader()->setStretchLastSection(true);
+    m_metaTable->verticalHeader()->setVisible(false);
+    m_metaTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_metaTable->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->stackWidget->addWidget(m_metaTable);
+
+    ui->stackWidget->setCurrentIndex(0);
 }
 
 LeftPanel::~LeftPanel()
 {
     delete ui;
+}
+
+void LeftPanel::setDicomMetadata(const std::map<std::string, std::string> &metadata)
+{
+    m_metaTable->setRowCount(static_cast<int>(metadata.size()));
+    int row = 0;
+    for (const auto &kv : metadata) {
+        if (kv.second.empty()) continue;
+        m_metaTable->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(kv.first)));
+        m_metaTable->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(kv.second)));
+        ++row;
+    }
+    m_metaTable->setRowCount(row);  // 跳过空值后收缩
+    // 默认展示元数据页（加载图像后用户最先想看患者/序列信息）
+    ui->stackWidget->setCurrentWidget(m_metaTable);
 }
 
 int LeftPanel::addPage(QWidget *page, const QString &title)

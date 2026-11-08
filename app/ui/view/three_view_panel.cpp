@@ -1,156 +1,186 @@
 #include "three_view_panel.h"
 #include "ui_three_view_panel.h"
 
+#include "controller/ThreeViewController.h"
+#include "interface/IViewRenderer.h"
+#include "renderer/OverlayManager/IOverlayManager.h"
+#include "renderer/VtkViewRenderer.h"
+
 #include <QVTKOpenGLNativeWidget.h>
 
 #include <vtkImageData.h>
-#include <vtkImageActor.h>
-#include <vtkImageMapper3D.h>
-#include <vtkImageProperty.h>
-#include <vtkInteractorStyleImage.h>
-#include <vtkProp.h>
-#include <vtkPropCollection.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderer.h>
 
 ThreeViewPanel::ThreeViewPanel(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ThreeViewPanel)
-    , m_axialRenderer(nullptr)
-    , m_sagittalRenderer(nullptr)
-    , m_coronalRenderer(nullptr)
-    , m_image(nullptr)
 {
     ui->setupUi(this);
-
-    setupView(ui->viewAxial, m_axialRenderer);
-    setupView(ui->viewSagittal, m_sagittalRenderer);
-    setupView(ui->viewCoronal, m_coronalRenderer);
+    setupEngine();
 }
 
 ThreeViewPanel::~ThreeViewPanel()
 {
-    if (m_image) {
-        m_image->Delete();
-        m_image = nullptr;
-    }
-
-    // renderer 由 widget 的 RenderWindow 持有，这里只释放引用
-    if (m_axialRenderer) {
-        m_axialRenderer->Delete();
-        m_axialRenderer = nullptr;
-    }
-    if (m_sagittalRenderer) {
-        m_sagittalRenderer->Delete();
-        m_sagittalRenderer = nullptr;
-    }
-    if (m_coronalRenderer) {
-        m_coronalRenderer->Delete();
-        m_coronalRenderer = nullptr;
-    }
+    // 不做 VTK 深度释放：VMware/GLEW 下 render window 析构可能卡死
+    // （与 MainWindow 摘面板不 delete 的 hack 配套）；进程退出由 OS 回收。
+    m_controller = nullptr;  // 面板拥有，随 Qt 树析构
 
     delete ui;
 }
 
-void ThreeViewPanel::setVtkImageData(vtkImageData *image)
+void ThreeViewPanel::setupEngine()
+{
+    QVTKOpenGLNativeWidget *widgets[3] = {
+        ui->viewAxial, ui->viewSagittal, ui->viewCoronal};
+    const ViewType orientations[3] = {
+        ViewType::Axial, ViewType::Sagittal, ViewType::Coronal};
+
+    for (int i = 0; i < 3; ++i) {
+        // Escape/键盘需要焦点；禁用右键菜单，避免抢走 VTK 的 RightButtonPress
+        widgets[i]->setFocusPolicy(Qt::StrongFocus);
+        widgets[i]->setContextMenuPolicy(Qt::NoContextMenu);
+        m_renderers[i] = std::make_unique<VtkViewRenderer>(widgets[i]);
+        m_renderers[i]->SetOrientation(orientations[i]);
+    }
+
+    m_controller = new ThreeViewController(this);
+    std::array<IViewRenderer *, 3> arr = {
+        m_renderers[0].get(), m_renderers[1].get(), m_renderers[2].get()};
+    m_controller->SetRenderers(arr);
+}
+
+void ThreeViewPanel::setDicomVolume(vtkImageData *image)
 {
     if (m_image == image) {
         return;
     }
-
     if (m_image) {
-        m_image->Delete();
+        m_image->UnRegister(nullptr);
     }
     m_image = image;
     if (m_image) {
         m_image->Register(nullptr);
     }
 
-    vtkRenderer *renderers[] = {m_axialRenderer, m_sagittalRenderer, m_coronalRenderer};
-    for (vtkRenderer *ren : renderers) {
-        if (!ren) {
-            continue;
-        }
-        ren->RemoveAllViewProps();
-        if (!m_image) {
-            continue;
-        }
+    // 混合控制器基准图 = 主图（对齐原版 SetImageData → SetPrimaryImage）
+    m_blend.SetPrimaryImage(m_image);
 
-        auto *actor = vtkImageActor::New();
-        actor->GetMapper()->SetInputData(m_image);
-        ren->AddActor(actor);
-        actor->Delete();
-
-        ren->ResetCamera();
+    if (m_controller) {
+        m_controller->SetImageData(m_blend.GetBlendedImage());
+        m_controller->ResetAllViews();
     }
+    renderAll();
+}
 
-    // 默认窗宽窗位（灰度 CT 常用范围，可按实际数据调整）
-    applyWindowLevel(2000.0, 400.0);
+void ThreeViewPanel::setSecondaryImage(vtkImageData *image)
+{
+    // CBCT 等叠加图（须已重采样到与主图同网格，否则 ImageBlend 拒绝）
+    m_blend.SetSecondaryImage(image);
+    if (m_controller) {
+        m_controller->SetImageData(m_blend.GetBlendedImage());
+    }
+    renderAll();
+}
+
+void ThreeViewPanel::setBlendRatio(double ratio)
+{
+    m_blend.SetBlendRatio(ratio);
+    if (m_controller) {
+        m_controller->SetImageData(m_blend.GetBlendedImage());
+    }
+    renderAll();
+}
+
+double ThreeViewPanel::blendRatio() const
+{
+    return m_blend.GetBlendRatio();
+}
+
+void ThreeViewPanel::setInteractionMode(InteractionMode mode)
+{
+    if (m_controller) {
+        m_controller->SetInteractionMode(mode);
+    }
+}
+
+void ThreeViewPanel::setRTStructureData(std::shared_ptr<RTStructureData> data)
+{
+    if (m_controller) {
+        m_controller->SetRTStructureData(std::move(data));
+    }
+    renderAll();
+}
+
+std::vector<ROIDisplayInfo> ThreeViewPanel::roiList() const
+{
+    if (!m_controller) return {};
+    auto *r = m_controller->GetRenderer(0);
+    if (!r) return {};
+    auto *om = r->GetOverlayManager();
+    return om ? om->GetROIList() : std::vector<ROIDisplayInfo>{};
+}
+
+void ThreeViewPanel::setRoiVisible(int roiNumber, bool visible)
+{
+    if (!m_controller) return;
+    for (int i = 0; i < 3; ++i) {
+        auto *r = m_controller->GetRenderer(i);
+        if (!r) continue;
+        auto *om = r->GetOverlayManager();
+        if (!om) continue;
+        om->SetROIVisible(roiNumber, visible);
+        // SetROIVisible 只改标志，须重建轮廓 actor（对齐原版 SetROIVisible）
+        om->OnSliceChanged(static_cast<ViewType>(i), r->GetSlice());
+        r->RequestRender();
+    }
+}
+
+std::vector<MeasurementRecord> ThreeViewPanel::measurementRecords() const
+{
+    return m_controller ? m_controller->CollectMeasurementRecords()
+                        : std::vector<MeasurementRecord>{};
+}
+
+void ThreeViewPanel::setModeToMeasurement(InteractionMode mode, bool state)
+{
+    if (!m_controller) return;
+
+    // 严格对齐原版 ThreeViewWidget::setModeToMeasurement：
+    //   取消选中 → 切到该模式清其绘制，再回 Normal（所有标注消失）
+    //   选中     → 先回 Normal 清干净，再进入目标模式（干净起步）
+    if (!state) {
+        m_controller->SetInteractionMode(mode);
+        m_controller->ClearAllStrategyDrawings();
+        m_controller->SetInteractionMode(InteractionMode::Normal);
+        renderAll();
+        return;
+    }
+    m_controller->SetInteractionMode(InteractionMode::Normal);
+    m_controller->ClearAllStrategyDrawings();
+    m_controller->SetInteractionMode(mode);
+    renderAll();
+}
+
+void ThreeViewPanel::resetViews()
+{
+    if (m_controller) {
+        m_controller->ResetAllViews();
+    }
+    renderAll();
+}
+
+void ThreeViewPanel::clearMeasurements()
+{
+    if (m_controller) {
+        m_controller->ClearAllStrategyDrawings();
+    }
     renderAll();
 }
 
 void ThreeViewPanel::renderAll()
 {
-    vtkRenderWindow *windows[] = {
-        ui->viewAxial->renderWindow(),
-        ui->viewSagittal->renderWindow(),
-        ui->viewCoronal->renderWindow(),
-    };
-    for (vtkRenderWindow *rw : windows) {
-        if (rw) {
-            rw->Render();
-        }
-    }
-}
-
-void ThreeViewPanel::setupView(QVTKOpenGLNativeWidget *widget, vtkRenderer *&renderer)
-{
-    auto *ren = vtkRenderer::New();
-    ren->SetBackground(0.12, 0.12, 0.14);
-    widget->setRenderWindow(widget->renderWindow());
-    widget->renderWindow()->AddRenderer(ren);
-    widget->renderWindow()->SetMultiSamples(0);
-
-    auto *style = vtkInteractorStyleImage::New();
-    widget->interactor()->SetInteractorStyle(style);
-    style->Delete();
-
-    // 保存引用（renderWindow 持有 ren，我们再 Register 一次便于释放）
-    ren->Register(nullptr);
-    renderer = ren;
-    ren->Delete();
-}
-
-void ThreeViewPanel::applyWindowLevel(double window, double level)
-{
-    vtkRenderer *renderers[] = {m_axialRenderer, m_sagittalRenderer, m_coronalRenderer};
-    for (vtkRenderer *ren : renderers) {
-        if (!ren) {
-            continue;
-        }
-        // 遍历 actors 设置窗宽窗位
-        vtkCollectionSimpleIterator it;
-        // 简化：通过 camera 后再统一处理；有 image actor 时用 color window
-        (void)window;
-        (void)level;
-        (void)it;
-    }
-    // 有数据时设置 color window/level
-    if (!m_image) {
-        return;
-    }
-    vtkRenderer *renderers2[] = {m_axialRenderer, m_sagittalRenderer, m_coronalRenderer};
-    for (vtkRenderer *ren : renderers2) {
-        if (!ren) {
-            continue;
-        }
-        vtkPropCollection *props = ren->GetViewProps();
-        props->InitTraversal();
-        while (vtkProp *prop = props->GetNextProp()) {
-            if (auto *actor = vtkImageActor::SafeDownCast(prop)) {
-                actor->GetProperty()->SetColorWindow(window);
-                actor->GetProperty()->SetColorLevel(level);
-            }
+    for (int i = 0; i < 3; ++i) {
+        if (m_renderers[i]) {
+            m_renderers[i]->RequestRender();
         }
     }
 }

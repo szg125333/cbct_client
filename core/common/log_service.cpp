@@ -71,6 +71,7 @@ bool LogService::initialize(const QString &exeDir, const QString &level)
         QStringLiteral("db"),
         QStringLiteral("core"),
         QStringLiteral("bridge"),
+        QStringLiteral("dicom"),
     };
 
     for (const QString &name : modules) {

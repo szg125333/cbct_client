@@ -34,6 +34,8 @@ public:
 signals:
     /// 点击任一登记过的按钮时发出（参数为中文功能名）
     void actionTriggered(const QString &actionName);
+    /// 点击任一登记过的按钮时发出（参数为 objectName + 按钮选中态，业务路由用这个）
+    void buttonClicked(const QString &objectName, bool checked);
 
 private slots:
     void onToolButtonClicked(); ///< sender() → 查表 → 打印并 emit

@@ -82,40 +82,65 @@
    </layout>
   </widget>
   <!--
-    菜单栏：五个顶级菜单，二级 QAction 尚未挂接。
+    菜单栏：五个顶级菜单 + 一级功能 QAction（移植 DicomImageStudy 第一阶段接线）。
     objectName：menuFile menuEdit menuView menuWindow menuHelp
-    各菜单用途与规划见 mainwindow.h 顶部 ASCII 布局说明。
   -->
   <widget class="QMenuBar" name="menubar">
-   <!-- 文件：患者/检查/数据导入导出/退出；规划：新建患者、打开、保存、导入 DICOM、退出 -->
+   <!-- 文件：打开 DICOM 目录/文件、退出 -->
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>文件</string>
     </property>
+    <addaction name="actionOpenDicomDir"/>
+    <addaction name="actionOpenDicomFiles"/>
+    <addaction name="actionOpenRtStruct"/>
+    <addaction name="actionOpenSecondary"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
-   <!-- 编辑：撤销重做、复制粘贴、清除勾画/测量标注 -->
+   <!-- 编辑：测量模式 + 清除标注 -->
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>编辑</string>
     </property>
+    <addaction name="actionModeDistance"/>
+    <addaction name="actionModeAngle"/>
+    <addaction name="actionModeRectRoi"/>
+    <addaction name="actionModeFreehandRoi"/>
+    <addaction name="separator"/>
+    <addaction name="actionClearMeasurements"/>
    </widget>
-   <!-- 视图：三视图↔采集2D、布局 1x1~3x3、窗宽窗位（只改显示不改数据） -->
+   <!-- 视图：页面切换、重置、交互模式 -->
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>视图</string>
     </property>
+    <addaction name="actionShowThreeView"/>
+    <addaction name="actionShowAcquisition"/>
+    <addaction name="separator"/>
+    <addaction name="actionResetViews"/>
+    <addaction name="actionContourList"/>
+    <addaction name="actionBlendRatio"/>
+    <addaction name="separator"/>
+    <addaction name="actionModeNormal"/>
+    <addaction name="actionModePan"/>
+    <addaction name="actionModeZoomHint"/>
+    <addaction name="actionModeProbe"/>
+    <addaction name="actionModeCrosshair"/>
    </widget>
-   <!-- 窗口：左侧功能栏显隐、重置布局（当前为固定分栏，非 QDockWidget） -->
+   <!-- 窗口：左侧功能栏显隐 -->
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>窗口</string>
     </property>
+    <addaction name="actionToggleLeftPanel"/>
    </widget>
-   <!-- 帮助：关于版本、使用说明、日志路径 -->
+   <!-- 帮助：关于 -->
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>帮助</string>
     </property>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -123,6 +148,165 @@
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
+  <!-- 菜单 QAction（objectName 供 mainwindow.cpp connect） -->
+  <action name="actionOpenDicomDir">
+   <property name="text">
+    <string>打开 DICOM 目录…</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionOpenDicomFiles">
+   <property name="text">
+    <string>打开 DICOM 文件…</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionOpenRtStruct">
+   <property name="text">
+    <string>打开 RTSTRUCT 轮廓…</string>
+   </property>
+  </action>
+  <action name="actionOpenSecondary">
+   <property name="text">
+    <string>打开叠加图像（CBCT）…</string>
+   </property>
+  </action>
+  <action name="actionBlendRatio">
+   <property name="text">
+    <string>混合比例…</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>退出</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionShowThreeView">
+   <property name="text">
+    <string>三视图</string>
+   </property>
+  </action>
+  <action name="actionShowAcquisition">
+   <property name="text">
+    <string>采集 2D</string>
+   </property>
+  </action>
+  <action name="actionResetViews">
+   <property name="text">
+    <string>重置视图</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionContourList">
+   <property name="text">
+    <string>轮廓列表</string>
+   </property>
+  </action>
+  <action name="actionClearMeasurements">
+   <property name="text">
+    <string>清除标注</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionModeNormal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>普通（窗宽窗位）</string>
+   </property>
+  </action>
+  <action name="actionModePan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>平移</string>
+   </property>
+  </action>
+  <action name="actionModeZoomHint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>缩放（Ctrl+左键拖）</string>
+   </property>
+  </action>
+  <action name="actionModeProbe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>像素探测</string>
+   </property>
+  </action>
+  <action name="actionModeCrosshair">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>十字线</string>
+   </property>
+  </action>
+  <action name="actionModeDistance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>长度测量</string>
+   </property>
+  </action>
+  <action name="actionModeAngle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>角度测量</string>
+   </property>
+  </action>
+  <action name="actionModeRectRoi">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>矩形 ROI</string>
+   </property>
+  </action>
+  <action name="actionModeFreehandRoi">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>手绘 ROI</string>
+   </property>
+  </action>
+  <action name="actionToggleLeftPanel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>左侧栏</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>关于</string>
+   </property>
+  </action>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>

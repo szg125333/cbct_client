@@ -22,7 +22,7 @@ MainToolbar::MainToolbar(QWidget *parent)
     //   btnPixelProbe    单像素 CT 值/HU 探测
     //   btnMoveCrosshair 十字线定位
     m_objectToAction = {
-        {QStringLiteral("btnOpen"),        QStringLiteral("打开文件")},
+        {QStringLiteral("btnOpen"),        QStringLiteral("打开 DICOM")},
         {QStringLiteral("btnSave"),        QStringLiteral("保存")},
 
         {QStringLiteral("btnAxialView"),   QStringLiteral("轴状位视图")},
@@ -147,6 +147,7 @@ void MainToolbar::onToolButtonClicked()
     const QString actionName = actionNameOf(btn);
     qInfo().noquote() << QStringLiteral("[MainToolbar] %1").arg(actionName);
     emit actionTriggered(actionName);
+    emit buttonClicked(btn->objectName(), btn->isChecked());
 }
 
 void MainToolbar::setupConnections()
