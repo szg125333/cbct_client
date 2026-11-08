@@ -97,6 +97,7 @@ public:
     void ResetAllViews();
 
     // 设置 RTSTRUCT 轮廓数据并在三视图中显示（解析在 core/dicom，bridge 转换后传入）
+    // 图像未就绪时先挂起，SetImageData 完成后自动注入（异步加载顺序无关）
     void SetRTStructureData(std::shared_ptr<RTStructureData> data);
 
     /// 导出用：汇总三个视图的全部距离/角度测量
@@ -139,6 +140,9 @@ private:
 
     InteractionMode m_currentMode = InteractionMode::Normal;
     std::map<InteractionMode, std::unique_ptr<IInteractionStrategy>> m_strategies;
+
+    /// 挂起的 RTSTRUCT（图像未就绪时暂存，SetImageData 后注入）
+    std::shared_ptr<RTStructureData> m_pendingRtData;
 
     bool m_isUpdatingSlice = false;
 };

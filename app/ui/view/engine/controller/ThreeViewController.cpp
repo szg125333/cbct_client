@@ -91,6 +91,13 @@ void ThreeViewController::SetImageData(vtkImageData* image)
 	}
 
 	RegisterEventCallbacks();
+
+	// 图像就绪后注入此前挂起的 RTSTRUCT
+	if (m_pendingRtData) {
+		auto pending = std::move(m_pendingRtData);
+		m_pendingRtData.reset();
+		SetRTStructureData(std::move(pending));
+	}
 }
 
 // ============================================================
@@ -434,6 +441,12 @@ void ThreeViewController::UnregisterEventCallbacks()
 void ThreeViewController::SetRTStructureData(std::shared_ptr<RTStructureData> data) {
 	if (!data) return;
 
+	// 图像/Overlay 未就绪（异步加载未完成）→ 挂起，SetImageData 后自动注入
+	if (!m_image || !m_renderers[0] || !m_renderers[0]->GetOverlayManager()) {
+		m_pendingRtData = std::move(data);
+		return;
+	}
+
 	// 通过 IOverlayManager 接口传递数据（解析在 core，bridge 已转换）
 	for (int i = 0; i < 3; ++i) {
 		if (!m_renderers[i] || !m_renderers[i]->GetOverlayManager()) continue;
@@ -441,7 +454,7 @@ void ThreeViewController::SetRTStructureData(std::shared_ptr<RTStructureData> da
 	}
 
 	for (int i = 0; i < 3; ++i) {
-		if (!m_renderers[i]) continue;
+		if (!m_renderers[i] || !m_renderers[i]->GetOverlayManager()) continue;
 		ViewType vt = static_cast<ViewType>(i);
 		int currentSlice = m_renderers[i]->GetSlice();
 		m_renderers[i]->GetOverlayManager()->OnSliceChanged(vt, currentSlice);

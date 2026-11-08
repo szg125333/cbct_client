@@ -127,6 +127,7 @@
     <addaction name="actionModeZoomHint"/>
     <addaction name="actionModeProbe"/>
     <addaction name="actionModeCrosshair"/>
+    <addaction name="actionModeSliceScroll"/>
    </widget>
    <!-- 窗口：左侧功能栏显隐 -->
    <widget class="QMenu" name="menuWindow">
@@ -257,6 +258,14 @@
    </property>
    <property name="text">
     <string>十字线</string>
+   </property>
+  </action>
+  <action name="actionModeSliceScroll">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>切片滑动</string>
    </property>
   </action>
   <action name="actionModeDistance">

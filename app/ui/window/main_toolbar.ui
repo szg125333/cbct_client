@@ -379,6 +379,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QToolButton" name="btnSliceScroll">
+     <property name="text">
+      <string></string>
+     </property>
+     <property name="toolTip">
+      <string>切片滑动</string>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QToolButton" name="btnBrush">
      <property name="text">
       <string></string>

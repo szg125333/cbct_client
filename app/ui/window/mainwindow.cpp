@@ -26,12 +26,13 @@
 namespace {
 
 // S6/S7 共用一张表，工具栏与菜单都从这里查
-const std::array<ModeBinding, 9> kModeBindings = {{
+const std::array<ModeBinding, 10> kModeBindings = {{
     {"btnWindowLevel", "actionModeNormal", InteractionMode::Normal, false},
     {"btnPan", "actionModePan", InteractionMode::ImageDrag, false},
     {"btnZoom", "actionModeZoomHint", InteractionMode::Normal, true},
     {"btnPixelProbe", "actionModeProbe", InteractionMode::Normal, true},
     {"btnMoveCrosshair", "actionModeCrosshair", InteractionMode::CrosshairRuler, false},
+    {"btnSliceScroll", "actionModeSliceScroll", InteractionMode::SliceScroll, false},
     {"btnMeasureRuler", "actionModeDistance", InteractionMode::DistanceMeasure, false},
     {"btnAngleMeasure", "actionModeAngle", InteractionMode::AngleMeasure, false},
     {"btnPolygonSelect", "actionModeRectRoi", InteractionMode::RegistrationROI, false},
@@ -247,6 +248,10 @@ void MainWindow::showThreeView()
 {
     CBCT_LOG_DEBUG("ui", "右侧切换到三视图");
     ui->rightStack->setCurrentWidget(ui->threeViewPanel);
+    // 左侧配套页跟随：三视图 → 元数据表（有图时）；无图时留在采集页
+    if (m_dicomBridge && m_dicomBridge->image()) {
+        ui->leftPanel->setCurrentPage(1);
+    }
 }
 
 void MainWindow::showAcquisitionView()
@@ -254,6 +259,8 @@ void MainWindow::showAcquisitionView()
     CBCT_LOG_DEBUG("ui", "右侧切换到 2D 采集页");
     ui->acquisitionImagePanel->resetDisplay();
     ui->rightStack->setCurrentWidget(ui->acquisitionImagePanel);
+    // 左侧配套页跟随：采集页（开始/停止、配方、记录都在这页）
+    ui->leftPanel->setCurrentPage(0);
 }
 
 void MainWindow::openDicomDirectory()
@@ -291,6 +298,12 @@ void MainWindow::openDicomDirectory()
     loadWithProgress([this, &dir, picked]() {
         return m_dicomBridge->loadSeriesAt(dir, picked);
     });
+
+    // 同目录有 RTSTRUCT 则自动加载轮廓（找不到静默跳过）
+    const QString rs = m_dicomBridge->findRtStructInDirectory(dir);
+    if (!rs.isEmpty() && m_dicomBridge->loadRtStruct(rs)) {
+        statusBar()->showMessage(tr("已自动加载同目录 RTSTRUCT：%1").arg(rs), 5000);
+    }
 }
 
 void MainWindow::openDicomFiles()
@@ -365,6 +378,7 @@ void MainWindow::loadWithProgress(const std::function<bool()> &loadFn)
     auto *progress = new QProgressDialog(tr("正在加载 DICOM…"), QString(), 0, 0, this);
     progress->setWindowModality(Qt::WindowModal);
     progress->setMinimumDuration(0);
+    progress->setAttribute(Qt::WA_DeleteOnClose);
     progress->show();
 
     // 加载完成/失败 → 关进度框（只连一次）

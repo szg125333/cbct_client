@@ -14,6 +14,7 @@
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
 
+#include <QDir>
 #include <QFileInfo>
 #include <QtConcurrent/QtConcurrentRun>
 #include <QMetaObject>
@@ -79,6 +80,20 @@ QVector<DicomBridge::SeriesSummary> DicomBridge::enumerateSeries(const QString &
         out.push_back(item);
     }
     return out;
+}
+
+QString DicomBridge::findRtStructInDirectory(const QString &directory) const
+{
+    const QDir dir(directory);
+    const auto entries = dir.entryInfoList(
+        QStringList() << QStringLiteral("*.dcm") << QStringLiteral("*.DCM"),
+        QDir::Files, QDir::Name);
+    for (const auto &fi : entries) {
+        if (cbct::dicom::DicomSeriesLoader::isRtStruct(fi.absoluteFilePath().toStdString())) {
+            return fi.absoluteFilePath();
+        }
+    }
+    return {};
 }
 
 bool DicomBridge::loadSeriesAt(const QString &directory, int index)

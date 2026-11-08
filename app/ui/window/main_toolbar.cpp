@@ -56,6 +56,7 @@ MainToolbar::MainToolbar(QWidget *parent)
         {QStringLiteral("btnPolygonSelect"),QStringLiteral("多边形选取")},
         {QStringLiteral("btnMagicThreshold"),QStringLiteral("魔棒阈值")},
         {QStringLiteral("btnMoveCrosshair"),QStringLiteral("移动准星")},
+        {QStringLiteral("btnSliceScroll"), QStringLiteral("切片滑动")}, // 左键上下拖动换切片
         {QStringLiteral("btnBrush"),       QStringLiteral("画笔")},
         {QStringLiteral("btnEraser"),      QStringLiteral("橡皮擦")},
 
@@ -100,6 +101,7 @@ MainToolbar::MainToolbar(QWidget *parent)
         {QStringLiteral("btnPolygonSelect"),QStringLiteral(":/icons/polygon_select.png")},
         {QStringLiteral("btnMagicThreshold"),QStringLiteral(":/icons/magic_threshold.png")},
         {QStringLiteral("btnMoveCrosshair"),QStringLiteral(":/icons/move_crosshair.png")},
+        {QStringLiteral("btnSliceScroll"), QStringLiteral(":/icons/slice_scroll.png")},
         {QStringLiteral("btnBrush"),       QStringLiteral(":/icons/brush.png")},
         {QStringLiteral("btnEraser"),      QStringLiteral(":/icons/eraser.png")},
 

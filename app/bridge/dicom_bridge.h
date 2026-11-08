@@ -52,6 +52,9 @@ public:
     /// 枚举目录内序列（已过滤 RT 类）
     QVector<SeriesSummary> enumerateSeries(const QString &directory);
 
+    /// 在目录内找 RTSTRUCT 文件（用于打开目录后自动加载轮廓）；找不到返回空
+    QString findRtStructInDirectory(const QString &directory) const;
+
     /// 按 enumerateSeries 的下标加载该序列
     bool loadSeriesAt(const QString &directory, int index);
 
