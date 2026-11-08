@@ -418,6 +418,9 @@
    </item>
    <item>
     <widget class="QFrame" name="sep6">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="frameShape">
       <enum>QFrame::VLine</enum>
      </property>
@@ -428,6 +431,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnRectCrop">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -438,6 +444,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnLassoCrop">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -448,6 +457,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnEraseMask">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -458,6 +470,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnCutTrim">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -468,6 +483,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnMagicThreshold">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -478,6 +496,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnBrush">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -488,6 +509,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnEraser">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -498,6 +522,9 @@
    </item>
    <item>
     <widget class="QFrame" name="sep7">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="frameShape">
       <enum>QFrame::VLine</enum>
      </property>
@@ -508,6 +535,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnAdd">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -518,6 +548,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnCopy">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>
@@ -528,6 +561,9 @@
    </item>
    <item>
     <widget class="QToolButton" name="btnPaste">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string></string>
      </property>

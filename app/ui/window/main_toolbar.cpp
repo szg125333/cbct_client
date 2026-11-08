@@ -19,8 +19,9 @@ MainToolbar::MainToolbar(QWidget *parent)
     // 4 显示调整      窗宽窗位预设、窗宽窗位、平移、缩放、边缘增强、像素探测、轮廓开关
     // 5 测量          直线距离、角度、多边形选取、绘制勾画、清除标注
     // 6 导航          十字准星、切片滑动
-    // 7 图像编辑      裁剪/擦除/魔棒/画笔（未接线）
-    // 8 剪贴板        新增/复制/粘贴（未接线）
+    // 7 图像编辑      裁剪/擦除/魔棒/画笔（引擎无算子，已从 .ui 隐藏 visible=false）
+    // 8 剪贴板        新增/复制/粘贴（语义未定义，已隐藏）
+    //   恢复方式：把 main_toolbar.ui 中对应按钮的 visible 改回 true（含 sep6/sep7）
     m_objectToAction = {
         {QStringLiteral("btnOpen"),        QStringLiteral("打开 DICOM")},
         {QStringLiteral("btnSave"),        QStringLiteral("保存")},
